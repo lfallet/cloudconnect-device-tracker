@@ -11,15 +11,16 @@
         android:apiKey="0GqWCesudGPMH7Fqmb8qvPLBno2K0CiUR2jkaBw"
         android:clickable="true" />
 
-    <ImageButton android:id="@+id/buttonRefresh"
+    <ImageButton
+        android:id="@+id/buttonRefresh"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_marginBottom="5dp"
         android:layout_marginRight="5dp"
-        android:src="@drawable/locate_cars"
         android:contentDescription="@string/rafraichir_description"
-        android:onClick="rafraichirOverlay" />
+        android:onClick="rafraichirOverlay"
+        android:src="@drawable/locate_cars" />
 
 </RelativeLayout>

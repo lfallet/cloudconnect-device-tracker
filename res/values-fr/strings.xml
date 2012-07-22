@@ -5,6 +5,9 @@
     <string name="fermer">Fermer</string>
     <string name="rafraichir_description">Rafraîchir la localisation des voitures</string>
     <string name="progress_dialog">Récupération des informations de la g8teway. Merci de patienter&#8230;</string>
+    <string name="connectionParamsNotSet">Veuillez saisir vos paramètres de connexion</string>
+    <string name="device">Véhicule</string>
+    <string name="located_devices">véhicules localisés</string>
 
     <!-- Option Menu -->
     <string name="menuRefreshTitle">Rafraîchir</string>

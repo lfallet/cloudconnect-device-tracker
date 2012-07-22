@@ -3,8 +3,11 @@
 
     <string name="app_name">CloudConnect Device tracker</string>
     <string name="fermer">Close</string>
-    <string name="rafraichir_description">Refresh cars"'" location</string>
-    <string name="progress_dialog">Retrieving information from g8teway. Please wait…</string>
+    <string name="rafraichir_description">Refresh cars\' location</string>
+    <string name="progress_dialog">Retrieving information from g8teway. Please wait&#8230;</string>
+    <string name="connectionParamsNotSet">Please fill connection parameters first</string>
+    <string name="device">Device</string>
+    <string name="located_devices">located devices</string>
 
     <!-- Option Menu -->
     <string name="menuRefreshTitle">Refresh</string>

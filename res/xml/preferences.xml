@@ -34,4 +34,13 @@
             android:title="@string/url" />
     </PreferenceCategory>
 
+    <!-- <PreferenceCategory -->
+    <!-- android:key="displayCategory" -->
+    <!-- android:title="@string/connectionParam" > -->
+    <!-- <CheckBoxPreference -->
+    <!-- android:key="enableCenterViewOnDevices" -->
+    <!-- android:title="@string/centerViewOnDevices" -->
+    <!-- /> -->
+    <!-- </PreferenceCategory> -->
+
 </PreferenceScreen>
