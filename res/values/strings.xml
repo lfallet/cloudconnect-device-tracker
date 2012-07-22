@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">CloudConnect Device tracker</string>
+    <string name="fermer">Close</string>
+    <string name="rafraichir_description">Refresh cars"'" location</string>
+    <string name="progress_dialog">Retrieving information from g8teway. Please wait…</string>
+
+    <!-- Option Menu -->
+    <string name="menuRefreshTitle">Refresh</string>
+    <string name="menuSettingsTitle">Settings</string>
+    
+    <!-- Connection parameters -->
+    <string name="connectionParam">Connection parameters</string>
+    <string name="user">User</string>
+    <string name="password">Password</string>
+    <string name="client">Client</string>
+    <string name="url">URL</string>
+    <string name="userField_summary">Username used to connect to the g8teway</string>
+    <string name="passwordField_summary">Stored in your device only</string>
+    <string name="clientField_summary">Client name used to connect to the g8teway</string>
+    <string name="urlField_summary">g8teway\'s API V2 address</string>
+    <string name="default_url">http://g8teway.com/api/v2/</string>
+</resources>

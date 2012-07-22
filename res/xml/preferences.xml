@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory
+        android:key="connectCategory"
+        android:title="@string/connectionParam" >
+        <EditTextPreference
+            android:defaultValue=""
+            android:dialogMessage="@string/userField_summary"
+            android:dialogTitle="@string/user"
+            android:key="user"
+            android:summary="@string/userField_summary"
+            android:title="@string/user" />
+        <EditTextPreference
+            android:defaultValue=""
+            android:dialogMessage="@string/passwordField_summary"
+            android:dialogTitle="@string/password"
+            android:key="password"
+            android:summary="@string/passwordField_summary"
+            android:title="@string/password" />
+        <EditTextPreference
+            android:defaultValue=""
+            android:dialogMessage="@string/clientField_summary"
+            android:dialogTitle="@string/client"
+            android:key="client"
+            android:summary="@string/clientField_summary"
+            android:title="@string/client" />
+        <EditTextPreference
+            android:defaultValue="@string/default_url"
+            android:dialogMessage="@string/urlField_summary"
+            android:dialogTitle="@string/url"
+            android:key="url"
+            android:summary="@string/urlField_summary"
+            android:title="@string/url" />
+    </PreferenceCategory>
+
+</PreferenceScreen>
