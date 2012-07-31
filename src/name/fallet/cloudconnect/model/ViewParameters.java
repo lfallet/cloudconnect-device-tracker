@@ -9,6 +9,10 @@ public class ViewParameters {
 
 	public int minLat = Integer.MAX_VALUE, maxLat = Integer.MIN_VALUE, minLng = Integer.MAX_VALUE, maxLng = Integer.MIN_VALUE;
 
+	public boolean centrerVueSuiteRafraichissement = false;
+
+	public boolean displayInactiveDevices = true;
+
 	/**
 	 * Etend les coordonnées limites si celles en entrées les dépassent
 	 */

@@ -1,5 +1,6 @@
 package name.fallet.cloudconnect;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -14,8 +15,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.GestureDetector.OnDoubleTapListener;
@@ -47,16 +48,12 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 
 	private PoiItemizedOverlay poiOverlay;
 
-	private PoiItemizedOverlay activeDevicesOverlay;
-
-	private PoiItemizedOverlay notActiveDevicesOverlay;
+	/** Overlay des devices */
+	public PoiItemizedOverlay notActiveDevicesOverlay, todayActiveDevicesOverlay, recentlyActiveDevicesOverlay;
 
 	private final MobileDevicesApiHelper mdApiHelper = new MobileDevicesApiHelper();
 
 	private boolean estPremierDemarrage = true;
-
-	// TODO : ajouter cela dans la config
-	private boolean centrerVueSuiteRafraichissement = false;
 
 	// approximativement le centre de Paris
 	private static final GeoPoint initGeoPoint = new GeoPoint(48863850, 2338170);
@@ -76,15 +73,20 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		mapView = (MapView) findViewById(R.id.mapview);
 		final List<Overlay> mapOverlays = mapView.getOverlays();
 
-		// couche pour les voitures actives du jour
-		final Drawable todayActiveDeviceDrawable = this.getResources().getDrawable(R.drawable.executive_car_48x48);
-		activeDevicesOverlay = new PoiItemizedOverlay(todayActiveDeviceDrawable, this);
-		mapOverlays.add(activeDevicesOverlay);
-
-		// couche pour les voitures inactives
-		final Drawable notActiveDeviceDrawable = this.getResources().getDrawable(R.drawable.executive_car_48x48_lighter);
+		// couche du dessous pour les voitures inactives
+		final Drawable notActiveDeviceDrawable = this.getResources().getDrawable(R.drawable.executive_car_48x48_ultralight);
 		notActiveDevicesOverlay = new PoiItemizedOverlay(notActiveDeviceDrawable, this);
 		mapOverlays.add(notActiveDevicesOverlay);
+
+		// couche pour les voitures actives du jour
+		final Drawable todayActiveDeviceDrawable = this.getResources().getDrawable(R.drawable.executive_car_48x48_lighter);
+		todayActiveDevicesOverlay = new PoiItemizedOverlay(todayActiveDeviceDrawable, this);
+		mapOverlays.add(todayActiveDevicesOverlay);
+
+		// couche du dessus pour les voitures actives récemment (durée paramétrable)
+		final Drawable recentlyActiveDeviceDrawable = this.getResources().getDrawable(R.drawable.executive_car_48x48);
+		recentlyActiveDevicesOverlay = new PoiItemizedOverlay(recentlyActiveDeviceDrawable, this);
+		mapOverlays.add(recentlyActiveDevicesOverlay);
 
 		// cadrage et zoom
 		mapView.setBuiltInZoomControls(true);
@@ -109,7 +111,7 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		Log.d(TAG, "Appel de onSaveInstanceState() sur l'activité");
 		final MapView mapView = (MapView) findViewById(R.id.mapview);
 
-		// outState.putSerializable(VEHICULES_OVERLAY_BUNDLE_KEY, activeDevicesOverlay);
+		// outState.putSerializable(VEHICULES_OVERLAY_BUNDLE_KEY, todayActiveDevicesOverlay);
 		outState.putSerializable(ZOOM_LEVEL_BUNDLE_KEY, mapView.getZoomLevel());
 		outState.putSerializable(MAP_CENTER_LAT_BUNDLE_KEY, mapView.getMapCenter().getLatitudeE6());
 		outState.putSerializable(MAP_CENTER_LNG_BUNDLE_KEY, mapView.getMapCenter().getLongitudeE6());
@@ -125,10 +127,10 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	@Override
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
 		Log.d(TAG, "Appel de onRestoreInstanceState() sur l'activité");
-		activeDevicesOverlay = (PoiItemizedOverlay) savedInstanceState.get(VEHICULES_OVERLAY_BUNDLE_KEY);
+		todayActiveDevicesOverlay = (PoiItemizedOverlay) savedInstanceState.get(VEHICULES_OVERLAY_BUNDLE_KEY);
 
 		final MapView mapView = (MapView) findViewById(R.id.mapview);
-		mapView.getOverlays().add(activeDevicesOverlay);
+		mapView.getOverlays().add(todayActiveDevicesOverlay);
 
 		Integer lat = (Integer) savedInstanceState.get(MAP_CENTER_LAT_BUNDLE_KEY), lng = (Integer) savedInstanceState
 				.get(MAP_CENTER_LNG_BUNDLE_KEY);
@@ -140,7 +142,6 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		super.onRestoreInstanceState(savedInstanceState);
 	}
 
-	@SuppressWarnings("unused")
 	private void ajouterPOIsurLaMap(final List<Overlay> mapOverlays) {
 		Drawable drawablePoi = this.getResources().getDrawable(R.drawable.androidmarker);
 		poiOverlay = new PoiItemizedOverlay(drawablePoi, this);
@@ -153,11 +154,16 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	}
 
 	/**
-	 * Reçoit l'interaction du bouton rafraîchir
+	 * Reçoit l'interaction du bouton rafraîchir :
+	 * <ul>
+	 * <li>affiche une erreur en cas de paramètres de connexion manquant (bloquant)</li>
+	 * <li>crée une tâche asynchrone pour contacter la g8teway</li>
+	 * <li>redessine les overlay de la ggmap</li>
+	 * </ul>
 	 */
-	public void rafraichirOverlay(View v) {
+	public void refreshOverlay(View v) {
 
-		ConnectionParameters connectionParameters = initialiserParametresConnexion();
+		final ConnectionParameters connectionParameters = initialiserParametresConnexion();
 		if (connectionParameters.isMissingAtLeastOneMandatoryValue()) {
 			Toast toast = Toast.makeText(GoogleMapsActivity.this.getApplicationContext(),
 					getResources().getText(R.string.connectionParamsNotSet), Toast.LENGTH_LONG);
@@ -165,34 +171,21 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 			return;
 		}
 
-		// FIXME : dialogue non visible car le thread lançant la requête est UI (pour le toast)
-		// shows dialog which will be closed after processing
-		final ProgressDialog progressDialog = ProgressDialog.show(this, "", getResources().getText(R.string.progress_dialog));
 		final ViewParameters viewParameters = new ViewParameters();
 
-		try {
-			final Collection<VehiculeLocalise> vehiculesLocalises = mdApiHelper.recupererPositionVehicules(connectionParameters, false);
+		// récupération asynchrone des données
+		new DeviceDataFetcherTask().execute(connectionParameters);
 
-			runOnUiThread(new Runnable() {
-				public void run() {
-					processEveryDevice(vehiculesLocalises, viewParameters, progressDialog);
-				}
-			});
-
-			if (centrerVueSuiteRafraichissement) {
-				// centrer la vue sur les objets
-				final MapView mapView = (MapView) findViewById(R.id.mapview);
-				GeoPoint pointMedian = new GeoPoint((viewParameters.minLat + viewParameters.maxLat) / 2,
-						(viewParameters.minLng + viewParameters.maxLng) / 2);
-				mapView.getController().animateTo(pointMedian);
-				mapView.getController().zoomToSpan(Math.round((viewParameters.maxLat - viewParameters.minLat) * RATIO_ZOOM_TO_SPAN),
-						Math.round((viewParameters.maxLng - viewParameters.minLng) * RATIO_ZOOM_TO_SPAN));
-			}
-
-		} catch (ApiException e) {
-			e.printStackTrace();
-			creerDialogueException(e);
+		if (viewParameters.centrerVueSuiteRafraichissement) {
+			// centrer la vue sur les objets
+			final MapView mapView = (MapView) findViewById(R.id.mapview);
+			GeoPoint pointMedian = new GeoPoint((viewParameters.minLat + viewParameters.maxLat) / 2,
+					(viewParameters.minLng + viewParameters.maxLng) / 2);
+			mapView.getController().animateTo(pointMedian);
+			mapView.getController().zoomToSpan(Math.round((viewParameters.maxLat - viewParameters.minLat) * RATIO_ZOOM_TO_SPAN),
+					Math.round((viewParameters.maxLng - viewParameters.minLng) * RATIO_ZOOM_TO_SPAN));
 		}
+
 	}
 
 	/**
@@ -200,20 +193,15 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	 * 
 	 * @param vehiculesLocalises
 	 * @param viewParameters
-	 * @param progressDialog
-	 *            dialog to close after processing
 	 */
-	// FIXME : à transformer en Async Task, idéalement dans un Service
-	private void processEveryDevice(final Collection<VehiculeLocalise> vehiculesLocalises, final ViewParameters viewParameters,
-			final ProgressDialog progressDialog) {
+	private void processEveryDevice(final Collection<VehiculeLocalise> vehiculesLocalises, final ViewParameters viewParameters) {
 
-		// pour le moment on nettoie tout et on recrée (plus tard, essayer
-		// de les déplacer)
-		activeDevicesOverlay.clear();
+		// pour le moment on nettoie tout et on recrée (plus tard, essayer de les déplacer)
 		notActiveDevicesOverlay.clear();
+		todayActiveDevicesOverlay.clear();
+		recentlyActiveDevicesOverlay.clear();
 
 		for (VehiculeLocalise vehiculeLocalise : vehiculesLocalises) {
-
 			// Log.d(TAG, vehiculeLocalise.getLat() + "," +
 			// vehiculeLocalise.getLng() + " / " +
 			// vehiculeLocalise.isLocalise());
@@ -221,38 +209,45 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 			if (vehiculeLocalise.isLocalise()) {
 				GeoPoint point = new GeoPoint(vehiculeLocalise.getLat(), vehiculeLocalise.getLng());
 				StringBuffer buffer = new StringBuffer();
-				buffer.append("id : ").append(vehiculeLocalise.getId());
-				buffer.append("\nmodid : ").append(vehiculeLocalise.getModid());
+				buffer.append(getResources().getText(R.string.unitid)).append(vehiculeLocalise.getId());
+				buffer.append("\n").append(getResources().getText(R.string.modid)).append(vehiculeLocalise.getModid());
 				// buffer.append("\nStatut : ").append(vehiculeLocalise.getStatut());
-				buffer.append("\nValidité : ").append(vehiculeLocalise.getDateInformations());
-				OverlayItem overlayitem = new OverlayItem(point, getResources().getText(R.string.device) + " " + vehiculeLocalise.getId(),
+				buffer.append("\n").append(getResources().getText(R.string.validity)).append(vehiculeLocalise.getDateInformations());
+				OverlayItem overlayItem = new OverlayItem(point, getResources().getText(R.string.device) + " " + vehiculeLocalise.getId(),
 						buffer.toString());
 
+				// TODO : à reprendre avec des calendar ?
 				// selon la fraîcheur de l'info
 				Date dateInfoDevice = vehiculeLocalise.getDateInformations();
-				long aujourdhuiMs = System.currentTimeMillis();
-				long aujourdhuiMinuitMs = aujourdhuiMs - (aujourdhuiMs % (24 * 60 * 60 * 1000L));
-				Log.d(TAG, dateInfoDevice.getTime() + " / " + aujourdhuiMinuitMs);
-				Date dateAujourdhuiMinuit = new Date(aujourdhuiMinuitMs);
-				if (dateInfoDevice.after(dateAujourdhuiMinuit)) {
-					activeDevicesOverlay.addOverlay(overlayitem);
+				// FIXME : retirer cet ajout de 2h GMT...
+				dateInfoDevice.setTime(dateInfoDevice.getTime() + 2 * 60 * 60 * 1000L);
+
+				final long aujourdhuiMs = System.currentTimeMillis();
+				// TODO : passer cette valeur en paramètre de visualisation
+				final long deuxMinutesAuparavantMs = aujourdhuiMs - 2 * 60 * 1000L;
+				final long aujourdhuiMinuitMs = aujourdhuiMs - (aujourdhuiMs % (24 * 60 * 60 * 1000L));
+				final Date dateAujourdhuiMinuit = new Date(aujourdhuiMinuitMs);
+				final Date dateDeuxMinutesAuparavant = new Date(deuxMinutesAuparavantMs);
+
+				Log.d(TAG, vehiculeLocalise.getId() + ": " + dateInfoDevice + " / " + new Date() + " (" + dateDeuxMinutesAuparavant + ", "
+						+ dateAujourdhuiMinuit + ")");
+
+				if (dateInfoDevice.after(dateDeuxMinutesAuparavant)) {
+					recentlyActiveDevicesOverlay.addOverlay(overlayItem);
+				} else if (dateInfoDevice.after(dateAujourdhuiMinuit)) {
+					todayActiveDevicesOverlay.addOverlay(overlayItem);
 				} else {
-					notActiveDevicesOverlay.addOverlay(overlayitem);
+					if (viewParameters.displayInactiveDevices) {
+						notActiveDevicesOverlay.addOverlay(overlayItem);
+					}
 				}
 
 				viewParameters.extendsBoundariesIfNecessary(vehiculeLocalise.getLat(), vehiculeLocalise.getLng());
 			}
-
-			// rafraîchir la carte
-			mapView.postInvalidate();
 		}
 
-		progressDialog.dismiss();
-
-		// attention un toast doit être lancé dans le Thread UI, pas un autre ; piste d'amélioration : utiliser un handler
-		Toast toast = Toast.makeText(GoogleMapsActivity.this.getApplicationContext(), Integer.toString(vehiculesLocalises.size()) + " "
-				+ getResources().getText(R.string.located_devices), Toast.LENGTH_SHORT);
-		toast.show();
+		// rafraîchir la carte
+		mapView.postInvalidate();
 	}
 
 	/** */
@@ -305,7 +300,7 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		// Handle item selection
 		switch (item.getItemId()) {
 		case R.id.menuRefresh:
-			rafraichirOverlay(findViewById(R.id.mapview));
+			refreshOverlay(findViewById(R.id.mapview));
 			return true;
 		case R.id.menuSettings:
 			afficherEcranConfiguration();
@@ -346,6 +341,59 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	public boolean onSingleTapConfirmed(MotionEvent e) {
 		// TODO Auto-generated method stub
 		return true;
+	}
+
+	/**
+	 * Get information from g8teway api.
+	 * 
+	 * @author lfallet
+	 */
+	private class DeviceDataFetcherTask extends AsyncTask<ConnectionParameters, Void, Collection<VehiculeLocalise>> {
+
+		private ProgressDialog progressDialog;
+
+		private Collection<VehiculeLocalise> vehiculesLocalises;
+
+		private final MobileDevicesApiHelper mdApiHelper = new MobileDevicesApiHelper();
+
+		/**
+		 * Lancer le dialogue d'avancement (attente)
+		 */
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			vehiculesLocalises = new ArrayList<VehiculeLocalise>();
+			progressDialog = ProgressDialog.show(GoogleMapsActivity.this, "", getResources().getText(R.string.progress_dialog), true);
+		}
+
+		@Override
+		protected Collection<VehiculeLocalise> doInBackground(ConnectionParameters... params) {
+			try {
+				vehiculesLocalises = mdApiHelper.recupererPositionVehicules(params[0], false);
+			} catch (ApiException e) {
+				e.printStackTrace();
+				creerDialogueException(e);
+			}
+			return vehiculesLocalises;
+		}
+
+		/**
+		 * Masquer le dialogue d'avancement. Afficher un toast.
+		 */
+		@Override
+		protected void onPostExecute(Collection<VehiculeLocalise> result) {
+			super.onPostExecute(result);
+
+			processEveryDevice(vehiculesLocalises, new ViewParameters());
+
+			progressDialog.dismiss();
+
+			// attention un toast doit être lancé dans le Thread UI, pas un autre ; piste d'amélioration : utiliser un handler
+			Toast toast = Toast.makeText(getApplicationContext(), Integer.toString(vehiculesLocalises.size()) + " "
+					+ getResources().getText(R.string.located_devices), Toast.LENGTH_SHORT);
+			toast.show();
+		}
+
 	}
 
 }

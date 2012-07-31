@@ -4,7 +4,7 @@
     <string name="app_name">CloudConnect Device tracker</string>
     <string name="fermer">Fermer</string>
     <string name="rafraichir_description">Rafraîchir la localisation des voitures</string>
-    <string name="progress_dialog">Récupération des informations de la g8teway. Merci de patienter&#8230;</string>
+    <string name="progress_dialog">Récupération des informations de la g8teway. Merci de patienter…</string>
     <string name="connectionParamsNotSet">Veuillez saisir vos paramètres de connexion</string>
     <string name="device">Véhicule</string>
     <string name="located_devices">véhicules localisés</string>
@@ -12,7 +12,7 @@
     <!-- Option Menu -->
     <string name="menuRefreshTitle">Rafraîchir</string>
     <string name="menuSettingsTitle">Configuration</string>
-    
+
     <!-- Connection parameters -->
     <string name="connectionParam">Paramètres de connexion</string>
     <string name="user">Utilisateur</string>
@@ -21,5 +21,10 @@
     <string name="passwordField_summary">Mémorisé uniquement dans votre appareil</string>
     <string name="clientField_summary">Nom de client sur la g8teway</string>
     <string name="urlField_summary">Adresse de l\'API V2 de la g8teway</string>
+
+    <!-- device dialog menu -->
+    <string name="unitid">unitid : </string>
+    <string name="modid">IMEI : </string>
+    <string name="validity">Validité : </string>
 
 </resources>

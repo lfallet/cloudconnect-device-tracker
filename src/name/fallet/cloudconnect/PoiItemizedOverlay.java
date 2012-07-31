@@ -66,6 +66,11 @@ public class PoiItemizedOverlay extends ItemizedOverlay<OverlayItem> implements 
 	 */
 	@Override
 	protected boolean onTap(int index) {
+		// FIXME : je ne comprends pas pourquoi le tableau n'est pas bon
+		if (mOverlays.size() < index) {
+			return false;
+		}
+		
 		OverlayItem item = mOverlays.get(index);
 		AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
 		// TODO : positionner une icône différente selon la date de validité des données

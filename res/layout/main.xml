@@ -20,7 +20,7 @@
         android:layout_marginBottom="5dp"
         android:layout_marginRight="5dp"
         android:contentDescription="@string/rafraichir_description"
-        android:onClick="rafraichirOverlay"
+        android:onClick="refreshOverlay"
         android:src="@drawable/locate_cars" />
 
 </RelativeLayout>
