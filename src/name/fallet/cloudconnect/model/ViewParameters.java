@@ -7,11 +7,17 @@ package name.fallet.cloudconnect.model;
  */
 public class ViewParameters {
 
+	public static final Integer DEFAULT_RECENT_VALUE = Integer.valueOf(2);
+
 	public int minLat = Integer.MAX_VALUE, maxLat = Integer.MIN_VALUE, minLng = Integer.MAX_VALUE, maxLng = Integer.MIN_VALUE;
 
+	// pas encore implémenté pour le moment
 	public boolean centrerVueSuiteRafraichissement = false;
 
 	public boolean displayInactiveDevices = true;
+
+	// information older than that is considered as not recent
+	public Integer relativeTimeRecentDevicesInMinutes;
 
 	/**
 	 * Etend les coordonnées limites si celles en entrées les dépassent

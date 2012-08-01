@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
+    <!-- Connection preferences -->
     <PreferenceCategory
         android:key="connectCategory"
-        android:title="@string/connectionParam" >
+        android:title="@string/connectionParameters" >
         <EditTextPreference
             android:defaultValue=""
             android:dialogMessage="@string/userField_summary"
@@ -34,13 +35,27 @@
             android:title="@string/url" />
     </PreferenceCategory>
 
-    <!-- <PreferenceCategory -->
-    <!-- android:key="displayCategory" -->
-    <!-- android:title="@string/connectionParam" > -->
-    <!-- <CheckBoxPreference -->
-    <!-- android:key="enableCenterViewOnDevices" -->
-    <!-- android:title="@string/centerViewOnDevices" -->
-    <!-- /> -->
-    <!-- </PreferenceCategory> -->
+    <!-- Display preferences -->
+    <PreferenceCategory
+        android:key="displayCategory"
+        android:title="@string/displayParameters" >
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="displayInactiveDevices"
+            android:summaryOff="@string/doNotDisplayInactiveDevices"
+            android:summaryOn="@string/displayInactiveDevices"
+            android:title="@string/displayInactiveDevicesTitle" />
+
+        <EditTextPreference
+            android:defaultValue="2"
+            android:dialogMessage="@string/definitionOfRecentDevicesInMinutesMessage"
+            android:dialogTitle="@string/definitionOfRecentDevicesInMinutesTitle"
+            android:key="definitionOfRecentDevicesInMinutes"
+            android:summary="@string/definitionOfRecentDevicesInMinutesSummary"
+            android:title="@string/definitionOfRecentDevicesInMinutesTitle" />
+        <!-- <CheckBoxPreference -->
+        <!-- android:key="enableCenterViewOnDevices" -->
+        <!-- android:title="@string/centerViewOnDevices" /> -->
+    </PreferenceCategory>
 
 </PreferenceScreen>

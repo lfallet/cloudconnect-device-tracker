@@ -163,7 +163,7 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	 */
 	public void refreshOverlay(View v) {
 
-		final ConnectionParameters connectionParameters = initialiserParametresConnexion();
+		final ConnectionParameters connectionParameters = initialiseConnectionParameters();
 		if (connectionParameters.isMissingAtLeastOneMandatoryValue()) {
 			Toast toast = Toast.makeText(GoogleMapsActivity.this.getApplicationContext(),
 					getResources().getText(R.string.connectionParamsNotSet), Toast.LENGTH_LONG);
@@ -171,11 +171,10 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 			return;
 		}
 
-		final ViewParameters viewParameters = new ViewParameters();
-
 		// récupération asynchrone des données
 		new DeviceDataFetcherTask().execute(connectionParameters);
 
+		final ViewParameters viewParameters = initialiseDisplayParameters();
 		if (viewParameters.centrerVueSuiteRafraichissement) {
 			// centrer la vue sur les objets
 			final MapView mapView = (MapView) findViewById(R.id.mapview);
@@ -223,26 +222,31 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 				dateInfoDevice.setTime(dateInfoDevice.getTime() + 2 * 60 * 60 * 1000L);
 
 				final long aujourdhuiMs = System.currentTimeMillis();
-				// TODO : passer cette valeur en paramètre de visualisation
-				final long deuxMinutesAuparavantMs = aujourdhuiMs - 2 * 60 * 1000L;
+				// la notion de récent est un paramètre de visualisation
+				final long recentEnMinutesAuparavantMs = aujourdhuiMs - viewParameters.relativeTimeRecentDevicesInMinutes * 60 * 1000L;
 				final long aujourdhuiMinuitMs = aujourdhuiMs - (aujourdhuiMs % (24 * 60 * 60 * 1000L));
 				final Date dateAujourdhuiMinuit = new Date(aujourdhuiMinuitMs);
-				final Date dateDeuxMinutesAuparavant = new Date(deuxMinutesAuparavantMs);
+				final Date dateRecentEnMinutesAuparavant = new Date(recentEnMinutesAuparavantMs);
 
-				Log.d(TAG, vehiculeLocalise.getId() + ": " + dateInfoDevice + " / " + new Date() + " (" + dateDeuxMinutesAuparavant + ", "
-						+ dateAujourdhuiMinuit + ")");
+				Log.d(TAG, vehiculeLocalise.getId() + ": " + dateInfoDevice + " / " + new Date() + " (" + dateRecentEnMinutesAuparavant
+						+ ", " + dateAujourdhuiMinuit + ")");
 
-				if (dateInfoDevice.after(dateDeuxMinutesAuparavant)) {
+				boolean deviceDisplayed = false;
+				if (dateInfoDevice.after(dateRecentEnMinutesAuparavant)) {
 					recentlyActiveDevicesOverlay.addOverlay(overlayItem);
+					deviceDisplayed = true;
 				} else if (dateInfoDevice.after(dateAujourdhuiMinuit)) {
 					todayActiveDevicesOverlay.addOverlay(overlayItem);
+					deviceDisplayed = true;
 				} else {
 					if (viewParameters.displayInactiveDevices) {
 						notActiveDevicesOverlay.addOverlay(overlayItem);
+						deviceDisplayed = true;
 					}
 				}
 
-				viewParameters.extendsBoundariesIfNecessary(vehiculeLocalise.getLat(), vehiculeLocalise.getLng());
+				if (deviceDisplayed)
+					viewParameters.extendsBoundariesIfNecessary(vehiculeLocalise.getLat(), vehiculeLocalise.getLng());
 			}
 		}
 
@@ -251,7 +255,7 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	}
 
 	/** */
-	private ConnectionParameters initialiserParametresConnexion() {
+	private ConnectionParameters initialiseConnectionParameters() {
 		ConnectionParameters connectionParameters = new ConnectionParameters();
 		// récupérer les préférences
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -260,6 +264,25 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		connectionParameters.setClient(sharedPrefs.getString("client", null));
 		connectionParameters.setUrl(sharedPrefs.getString("url", null));
 		return connectionParameters;
+	}
+
+	/** */
+	private ViewParameters initialiseDisplayParameters() {
+		ViewParameters displayParameters = new ViewParameters();
+		// récupérer les préférences
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+		displayParameters.displayInactiveDevices = sharedPrefs.getBoolean("displayInactiveDevices", true);
+		String recentValue = sharedPrefs.getString("definitionOfRecentDevicesInMinutes", ViewParameters.DEFAULT_RECENT_VALUE.toString());
+		Log.d(TAG, "recentValue : " + recentValue);
+		Integer recentValueInt = Integer.getInteger(recentValue);
+		if (recentValueInt == null) {
+			Log.d(TAG, "recentValueInt is null");
+			displayParameters.relativeTimeRecentDevicesInMinutes = ViewParameters.DEFAULT_RECENT_VALUE;
+		} else {
+			Log.v(TAG, "working fine");
+			displayParameters.relativeTimeRecentDevicesInMinutes = recentValueInt.intValue();
+		}
+		return displayParameters;
 	}
 
 	/**
@@ -384,7 +407,8 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		protected void onPostExecute(Collection<VehiculeLocalise> result) {
 			super.onPostExecute(result);
 
-			processEveryDevice(vehiculesLocalises, new ViewParameters());
+			final ViewParameters viewParameters = initialiseDisplayParameters();
+			processEveryDevice(vehiculesLocalises, viewParameters);
 
 			progressDialog.dismiss();
 

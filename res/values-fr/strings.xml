@@ -22,6 +22,15 @@
     <string name="clientField_summary">Nom de client sur la g8teway</string>
     <string name="urlField_summary">Adresse de l\'API V2 de la g8teway</string>
 
+    <!-- Display parameters -->
+    <string name="displayParameters">Paramètres d\'affichage</string>
+    <string name="displayInactiveDevicesTitle">Affichage des devices inactifs</string>
+    <string name="displayInactiveDevices">Les devices inactifs seront représentés sur la carte</string>
+    <string name="doNotDisplayInactiveDevices">Les devices inactifs ne seront pas représentés sur la carte</string>
+    <string name="definitionOfRecentDevicesInMinutesTitle">Définition des devices récents</string>
+    <string name="definitionOfRecentDevicesInMinutesSummary">Durée en minutes pendant laquelle une information est considérée comme récente</string>
+    <string name="definitionOfRecentDevicesInMinutesMessage">Durée en minutes pendant laquelle une information est considérée comme récente</string>
+
     <!-- device dialog menu -->
     <string name="unitid">unitid : </string>
     <string name="modid">IMEI : </string>

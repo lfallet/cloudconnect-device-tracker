@@ -14,7 +14,7 @@
     <string name="menuSettingsTitle">Settings</string>
 
     <!-- Connection parameters -->
-    <string name="connectionParam">Connection parameters</string>
+    <string name="connectionParameters">Connection parameters</string>
     <string name="user">User</string>
     <string name="password">Password</string>
     <string name="client">Client</string>
@@ -24,6 +24,15 @@
     <string name="clientField_summary">Client name used to connect to the g8teway</string>
     <string name="urlField_summary">g8teway\'s API V2 address</string>
     <string name="default_url">http://g8teway.com/api/v2/</string>
+
+    <!-- Display parameters -->
+    <string name="displayParameters">Display parameters</string>
+    <string name="displayInactiveDevicesTitle">Display of inactive devices</string>
+    <string name="displayInactiveDevices">Inactive devices will be shown on the map</string>
+    <string name="doNotDisplayInactiveDevices">Inactive devices will not be shown on the map</string>
+    <string name="definitionOfRecentDevicesInMinutesTitle">Definition of recent devices</string>
+    <string name="definitionOfRecentDevicesInMinutesSummary">If a device sent information during the last minutes defined here, it will be considered as recent.</string>
+    <string name="definitionOfRecentDevicesInMinutesMessage">Maximum lenght in minutes to consider a device\'s information as recent</string>
 
     <!-- device dialog menu -->
     <string name="unitid">unitid: </string>
