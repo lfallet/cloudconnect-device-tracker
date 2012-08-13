@@ -32,8 +32,8 @@ public class JsonInterpreteur {
 	 *            doit contenir des éléments 'unit'
 	 * @throws JSONException
 	 */
-	public static Collection<? extends VehiculeLocalise> traiter(JSONArray json) throws JSONException {
-		final List<VehiculeLocalise> vehiculesLocalises = new ArrayList<VehiculeLocalise>();
+	public static Collection<? extends LocatedDevice> traiter(JSONArray json) throws JSONException {
+		final List<LocatedDevice> vehiculesLocalises = new ArrayList<LocatedDevice>();
 
 		for (int i = 0; i < json.length(); i++) {
 			JSONObject jsonUnit = json.getJSONObject(i);
@@ -55,7 +55,7 @@ public class JsonInterpreteur {
 			} catch (ParseException e) {
 				Log.w(TAG, "Erreur lors du parsing de la date " + dateStr + " : " + e.getMessage());
 			}
-			VehiculeLocalise vehLoc = new VehiculeLocalise(id, modid, dateInfo);
+			LocatedDevice vehLoc = new LocatedDevice(id, modid, dateInfo);
 
 			int lat = jsonObj.optInt(MobileDevicesApiHelper.LAT) * MobileDevicesApiHelper.COEF_LAT_LNG, lng = jsonObj
 					.getInt(MobileDevicesApiHelper.LNG) * MobileDevicesApiHelper.COEF_LAT_LNG;

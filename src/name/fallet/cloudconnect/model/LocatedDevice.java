@@ -6,7 +6,7 @@ import java.util.Date;
  * 
  * @author lfallet
  */
-public class VehiculeLocalise {
+public class LocatedDevice {
 
 	private final int id;
 	private final long modid;
@@ -21,7 +21,7 @@ public class VehiculeLocalise {
 
 	private static final int NOT_INITIALIZED = 0;
 
-	public VehiculeLocalise(int id, long modid, Date dateInformations) {
+	public LocatedDevice(int id, long modid, Date dateInformations) {
 		super();
 		this.id = id;
 		this.modid = modid;

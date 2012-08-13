@@ -13,7 +13,7 @@ import java.util.List;
 import name.fallet.cloudconnect.model.ApiException;
 import name.fallet.cloudconnect.model.ConnectionParameters;
 import name.fallet.cloudconnect.model.JsonInterpreteur;
-import name.fallet.cloudconnect.model.VehiculeLocalise;
+import name.fallet.cloudconnect.model.LocatedDevice;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -28,6 +28,9 @@ import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 /**
@@ -99,9 +102,9 @@ public class MobileDevicesApiHelper {
 	 * @return
 	 * @throws IOException
 	 */
-	public synchronized Collection<VehiculeLocalise> recupererPositionVehicules(ConnectionParameters connectionParameters,
+	public synchronized Collection<LocatedDevice> recupererPositionVehicules(ConnectionParameters connectionParameters,
 			boolean restreindreJourJ) throws ApiException {
-		final List<VehiculeLocalise> vehiculesLocalises = new ArrayList<VehiculeLocalise>();
+		final List<LocatedDevice> vehiculesLocalises = new ArrayList<LocatedDevice>();
 
 		try {
 			// pour ouvrir une session si nécessaire
@@ -124,6 +127,16 @@ public class MobileDevicesApiHelper {
 			// on ne ferme pas la socket pour la réutiliser (refresh fréquents possibles)
 		}
 		return vehiculesLocalises;
+	}
+
+	// TODO : check internet availability
+	public boolean isOnline(Context context) {
+		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo netInfo = cm.getActiveNetworkInfo();
+		if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
