@@ -28,9 +28,6 @@ import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.util.Log;
 
 /**
@@ -127,16 +124,6 @@ public class MobileDevicesApiHelper {
 			// on ne ferme pas la socket pour la réutiliser (refresh fréquents possibles)
 		}
 		return vehiculesLocalises;
-	}
-
-	// TODO : check internet availability
-	public boolean isOnline(Context context) {
-		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo netInfo = cm.getActiveNetworkInfo();
-		if (netInfo != null && netInfo.isConnectedOrConnecting()) {
-			return true;
-		}
-		return false;
 	}
 
 	/**

@@ -11,10 +11,13 @@ import name.fallet.cloudconnect.model.LocatedDevice;
 import name.fallet.cloudconnect.model.ViewParameters;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -99,7 +102,7 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		} else {
 			// on restore
 			locatedDevices = data;
-			// TODO : relancer le dessin de ces devices
+			// relancer le dessin de ces devices
 			final ViewParameters viewParameters = initializeDisplayParameters();
 			processEveryDevice(locatedDevices, viewParameters);
 		}
@@ -166,16 +169,28 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		return false;
 	}
 
+	/** Check internet availability */
+	public boolean isConnectedToNetwork(Context context) {
+		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo netInfo = cm.getActiveNetworkInfo();
+		if (netInfo != null && netInfo.isConnected()) {
+			return true;
+		}
+		return false;
+	}
+
 	/**
 	 * Reçoit l'interaction du bouton rafraîchir :
 	 * <ul>
-	 * <li>affiche une erreur en cas de paramètres de connexion manquant (bloquant)</li>
+	 * <li>affiche un toast en cas de paramètres de connexion manquant (bloquant)</li>
+	 * <li>affiche un toast si aucune connexion internet n'est active (bloquant)</li>
 	 * <li>crée une tâche asynchrone pour contacter la g8teway</li>
-	 * <li>redessine les overlay de la ggmap</li>
+	 * <li>(via asyncTask) redessine les overlay de la ggmap</li>
 	 * </ul>
 	 */
 	public void refreshOverlay(View v) {
 
+		// are parameters set ?
 		final ConnectionParameters connectionParameters = initializeConnectionParameters();
 		if (connectionParameters.isMissingAtLeastOneMandatoryValue()) {
 			Toast toast = Toast.makeText(GoogleMapsActivity.this.getApplicationContext(),
@@ -184,20 +199,16 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 			return;
 		}
 
-		// récupération asynchrone des données
-		new DeviceDataFetcherTask().execute(connectionParameters);
-
-		final ViewParameters viewParameters = initializeDisplayParameters();
-		if (viewParameters.centrerVueSuiteRafraichissement) {
-			// centrer la vue sur les objets
-			final MapView mapView = (MapView) findViewById(R.id.mapview);
-			GeoPoint pointMedian = new GeoPoint((viewParameters.minLat + viewParameters.maxLat) / 2,
-					(viewParameters.minLng + viewParameters.maxLng) / 2);
-			mapView.getController().animateTo(pointMedian);
-			mapView.getController().zoomToSpan(Math.round((viewParameters.maxLat - viewParameters.minLat) * RATIO_ZOOM_TO_SPAN),
-					Math.round((viewParameters.maxLng - viewParameters.minLng) * RATIO_ZOOM_TO_SPAN));
+		// is network fine ?
+		if (!isConnectedToNetwork(GoogleMapsActivity.this.getApplicationContext())) {
+			Toast toast = Toast.makeText(GoogleMapsActivity.this.getApplicationContext(),
+					getResources().getText(R.string.networkNotConnected), Toast.LENGTH_LONG);
+			toast.show();
+			return;
 		}
 
+		// récupération asynchrone des données
+		new DeviceDataFetcherTask().execute(connectionParameters);
 	}
 
 	/**
@@ -422,12 +433,21 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 
 			final ViewParameters viewParameters = initializeDisplayParameters();
 			processEveryDevice(locatedDevices, viewParameters);
+			if (viewParameters.centrerVueSuiteRafraichissement) {
+				// centrer la vue sur les objets
+				final MapView mapView = (MapView) findViewById(R.id.mapview);
+				GeoPoint pointMedian = new GeoPoint((viewParameters.minLat + viewParameters.maxLat) / 2,
+						(viewParameters.minLng + viewParameters.maxLng) / 2);
+				mapView.getController().animateTo(pointMedian);
+				mapView.getController().zoomToSpan(Math.round((viewParameters.maxLat - viewParameters.minLat) * RATIO_ZOOM_TO_SPAN),
+						Math.round((viewParameters.maxLng - viewParameters.minLng) * RATIO_ZOOM_TO_SPAN));
+			}
 
 			progressDialog.dismiss();
 
 			// attention un toast doit être lancé dans le Thread UI, pas un autre ; piste d'amélioration : utiliser un handler
-			Toast toast = Toast.makeText(getApplicationContext(),
-					Integer.toString(locatedDevices.size()) + " " + getResources().getText(R.string.located_devices), Toast.LENGTH_SHORT);
+			Toast toast = Toast.makeText(getApplicationContext(), Integer.toString(recentlyActiveDevicesOverlay.size()) + " "
+					+ getResources().getText(R.string.located_devices), Toast.LENGTH_SHORT);
 			toast.show();
 		}
 

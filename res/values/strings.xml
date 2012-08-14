@@ -39,4 +39,7 @@
     <string name="modid">IMEI: </string>
     <string name="validity">Validity: </string>
 
+    <!-- errors -->
+    <string name="networkNotConnected">No connection, please activate one.</string>
+    
 </resources>
