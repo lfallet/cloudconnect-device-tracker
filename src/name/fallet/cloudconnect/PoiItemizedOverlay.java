@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
@@ -18,6 +19,8 @@ import com.google.android.maps.OverlayItem;
  */
 @SuppressWarnings("serial")
 public class PoiItemizedOverlay extends ItemizedOverlay<OverlayItem> implements Serializable {
+
+	private static final String TAG = PoiItemizedOverlay.class.getSimpleName();
 
 	private final ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
 
@@ -68,9 +71,10 @@ public class PoiItemizedOverlay extends ItemizedOverlay<OverlayItem> implements 
 	protected boolean onTap(int index) {
 		// FIXME : je ne comprends pas pourquoi le tableau n'est pas bon
 		if (mOverlays.size() < index) {
+			Log.w(TAG, "Nombre d'overlays (" + mOverlays.size() + ") inférieur à l'index demandé : " + index);
 			return false;
 		}
-		
+
 		OverlayItem item = mOverlays.get(index);
 		AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
 		// TODO : positionner une icône différente selon la date de validité des données

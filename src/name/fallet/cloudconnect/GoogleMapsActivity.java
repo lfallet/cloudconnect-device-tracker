@@ -52,7 +52,7 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	private PoiItemizedOverlay poiOverlay;
 
 	/** Overlay des devices */
-	public PoiItemizedOverlay notActiveDevicesOverlay, todayActiveDevicesOverlay, recentlyActiveDevicesOverlay;
+	private PoiItemizedOverlay notActiveDevicesOverlay, todayActiveDevicesOverlay, recentlyActiveDevicesOverlay;
 
 	private final MobileDevicesApiHelper mdApiHelper = new MobileDevicesApiHelper();
 
@@ -92,6 +92,9 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 
 		// cadrage et zoom
 		mapView.setBuiltInZoomControls(true);
+
+		// FIXME : peut être à supprimer car ne semble pas aider au double-clic
+		mapView.setClickable(true); // pour réagir aux clics
 
 		// vérification si le create a été appelé après une reconfig d'écran
 		final Collection<LocatedDevice> data = (Collection<LocatedDevice>) getLastNonConfigurationInstance();
@@ -381,14 +384,13 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 
 	@Override
 	public boolean onDoubleTapEvent(MotionEvent e) {
-		// TODO Auto-generated method stub
+		// FIXME le double tap ne fonctionne pas
 		Toast.makeText(GoogleMapsActivity.this.getApplicationContext(), "onDoubleTapEvent", Toast.LENGTH_SHORT).show();
 		return true;
 	}
 
 	@Override
 	public boolean onSingleTapConfirmed(MotionEvent e) {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
@@ -446,11 +448,11 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 			progressDialog.dismiss();
 
 			// attention un toast doit être lancé dans le Thread UI, pas un autre ; piste d'amélioration : utiliser un handler
-			Toast toast = Toast.makeText(getApplicationContext(), Integer.toString(recentlyActiveDevicesOverlay.size()) + " "
-					+ getResources().getText(R.string.located_devices), Toast.LENGTH_SHORT);
+			final int nbVehiculesLocalises = recentlyActiveDevicesOverlay.size();
+			String texte = getResources().getQuantityString(R.plurals.located_devices, nbVehiculesLocalises, nbVehiculesLocalises);
+			Toast toast = Toast.makeText(getApplicationContext(), texte, Toast.LENGTH_SHORT);
 			toast.show();
 		}
-
 	}
 
 }

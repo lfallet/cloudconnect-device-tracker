@@ -7,7 +7,12 @@
     <string name="progress_dialog">Récupération des informations de la g8teway. Merci de patienter…</string>
     <string name="connectionParamsNotSet">Veuillez saisir vos paramètres de connexion</string>
     <string name="device">Véhicule</string>
-    <string name="located_devices">véhicules localisés</string>
+
+    <plurals name="located_devices">
+        <item quantity="zero">Aucun véhicule localisé</item>
+        <item quantity="one">1 véhicule localisé</item>
+        <item quantity="other">%d véhicules localisés</item>
+    </plurals>
 
     <!-- Option Menu -->
     <string name="menuRefreshTitle">Rafraîchir</string>
@@ -38,5 +43,5 @@
 
     <!-- errors -->
     <string name="networkNotConnected">Veuillez activer une connexion réseau.</string>
-    
+
 </resources>

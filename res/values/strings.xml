@@ -7,7 +7,12 @@
     <string name="progress_dialog">Retrieving information from g8teway. Please wait…</string>
     <string name="connectionParamsNotSet">Please fill connection parameters first</string>
     <string name="device">Device</string>
-    <string name="located_devices">located devices</string>
+
+    <plurals name="located_devices">
+        <item quantity="zero">No device located</item>
+        <item quantity="one">1 device located</item>
+        <item quantity="other">%d located devices</item>
+    </plurals>
 
     <!-- Option Menu -->
     <string name="menuRefreshTitle">Refresh</string>
@@ -41,5 +46,5 @@
 
     <!-- errors -->
     <string name="networkNotConnected">No connection, please activate one.</string>
-    
+
 </resources>

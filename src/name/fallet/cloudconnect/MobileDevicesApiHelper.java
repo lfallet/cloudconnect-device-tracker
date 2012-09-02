@@ -46,8 +46,8 @@ public class MobileDevicesApiHelper {
 
 	public static final String ID = "id", MODID = "modid", LAT = "lat", LNG = "lng", TIME = "time";
 
-	// IDEA : mettre la limite max, ou pas de limite ? (25 par défaut ?)
-	private static final String LIMIT_NB_DEVICE = "100";
+	/** limite max : 100 (25 par défaut) */
+	private static final int LIMIT_NB_DEVICE = 100;
 
 	/** pour passer de 1E5 de Mobile Devices à la précision 1E6 d'Android */
 	public static final int COEF_LAT_LNG = 10;
@@ -111,8 +111,8 @@ public class MobileDevicesApiHelper {
 				login(connectionParameters);
 			}
 
-			JSONArray json = requestUnitsLocation(connectionParameters, restreindreJourJ);
-			vehiculesLocalises.addAll(JsonInterpreteur.traiter(json));
+			JSONArray localisationVehiculesJSON = requestUnitsLocation(connectionParameters, restreindreJourJ);
+			vehiculesLocalises.addAll(JsonInterpreteur.traiter(localisationVehiculesJSON));
 
 		} catch (IOException e) {
 			Log.e(TAG, "Erreur IO : " + e.getMessage());
@@ -127,20 +127,52 @@ public class MobileDevicesApiHelper {
 	}
 
 	/**
+	 * Méthode prenant en charge le requêtage multiple si le nombre de devices retournés est > à la limite
+	 * 
+	 * @param connectionParameters
+	 * @param restreindreIntervalleTemps
+	 * @return
+	 * @throws IOException
+	 * @throws JSONException
+	 */
+	private JSONArray requestUnitsLocation(ConnectionParameters connectionParameters, boolean restreindreIntervalleTemps)
+			throws IOException, JSONException {
+
+		final JSONArray resultatsGlobaux = new JSONArray();
+		int start = 0;
+		int nbResultats = 0;
+		do {
+			JSONArray resultatsRequete = requestUnitsLocation(connectionParameters, restreindreIntervalleTemps, start);
+			nbResultats = resultatsRequete.length();
+			Log.d(TAG, "Requêtage en partant de " + start + " : " + nbResultats + " unitsLocation reçues");
+			for (int i = 0; i < nbResultats; i++) {
+				resultatsGlobaux.put(resultatsRequete.get(i));
+			}
+			start += nbResultats;
+		} while (LIMIT_NB_DEVICE == nbResultats);
+
+		Log.d(TAG, resultatsGlobaux.length() + " unitsLocation reçues au total");
+		return resultatsGlobaux;
+	}
+
+	/**
 	 * Attention, cette méthode est réentrante afin de se relogguer si besoin.
 	 * 
 	 * @param connectionParameters
 	 * 
 	 * @param restreindreIntervalleTemps
 	 *            limite les données retournées selon la date de la dernière info reçue du device par la gateway
+	 * @param start
+	 *            index de départ dans les résultats (0 pour tenter de tout retourner, valeur autre pour passer aux autres pages)
 	 * @return A JSONArray representing the result of the request
 	 */
-	private JSONArray requestUnitsLocation(ConnectionParameters connectionParameters, boolean restreindreIntervalleTemps)
+	private JSONArray requestUnitsLocation(ConnectionParameters connectionParameters, boolean restreindreIntervalleTemps, final int start)
 			throws IOException, JSONException {
 		// the parameters of the request (including the id_min)
 		StringBuffer requestParameters = new StringBuffer("?ret=");
 		requestParameters.append(ID + "," + MODID + "," + LAT + "," + LNG + "," + TIME);
 		requestParameters.append("&limit=" + LIMIT_NB_DEVICE);
+		requestParameters.append("&start=" + start);
 
 		// FIXME : le paramètre from n'est pas correct (retourne un HTTP 422)
 		// ajout d'une restriction sur la date
@@ -169,13 +201,12 @@ public class MobileDevicesApiHelper {
 			httpResponse.getEntity().consumeContent();
 			return res;
 		} else {
-			// erreur, peut être session expirée, on se relogge et on réessaie
-			login(connectionParameters);
-
+			// FIXME : erreur, session peut-être expirée, on se relogge et on réessaie
+			// login(connectionParameters);
 			// attention, réentrant !
 			// return requestUnitsLocation(restreindreIntervalleTemps);
-			return new JSONArray();
 		}
+		return new JSONArray();
 	}
 
 	/**
