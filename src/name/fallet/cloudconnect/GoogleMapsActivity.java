@@ -1,8 +1,10 @@
 package name.fallet.cloudconnect;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import name.fallet.cloudconnect.model.ApiException;
@@ -33,6 +35,7 @@ import android.widget.Toast;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapView;
+import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 import com.google.android.maps.Projection;
@@ -50,6 +53,8 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	private MapView mapView;
 
 	private PoiItemizedOverlay poiOverlay;
+
+	private MyLocationOverlay myLocationOverlay;
 
 	/** Overlay des devices */
 	private PoiItemizedOverlay notActiveDevicesOverlay, todayActiveDevicesOverlay, recentlyActiveDevicesOverlay;
@@ -74,21 +79,29 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 
 		mapView = (MapView) findViewById(R.id.mapview);
 		final List<Overlay> mapOverlays = mapView.getOverlays();
+		if (mapOverlays.isEmpty()) {
+			// TODO : rendre la position de l'utilisateur optionnelle
+			// position de l'utilisateur
+			myLocationOverlay = new MyLocationOverlay(this, mapView);
+			mapOverlays.add(myLocationOverlay);
 
-		// couche du dessous pour les voitures inactives
-		final Drawable notActiveDeviceDrawable = this.getResources().getDrawable(R.drawable.executive_car_48x48_ultralight);
-		notActiveDevicesOverlay = new PoiItemizedOverlay(notActiveDeviceDrawable, this);
-		mapOverlays.add(notActiveDevicesOverlay);
+			// couche du dessous pour les voitures inactives
+			final Drawable notActiveDeviceDrawable = this.getResources().getDrawable(R.drawable.executive_car_48x48_ultralight);
+			notActiveDevicesOverlay = new PoiItemizedOverlay(notActiveDeviceDrawable, this);
+			mapOverlays.add(notActiveDevicesOverlay);
 
-		// couche pour les voitures actives du jour
-		final Drawable todayActiveDeviceDrawable = this.getResources().getDrawable(R.drawable.executive_car_48x48_lighter);
-		todayActiveDevicesOverlay = new PoiItemizedOverlay(todayActiveDeviceDrawable, this);
-		mapOverlays.add(todayActiveDevicesOverlay);
+			// couche pour les voitures actives du jour
+			final Drawable todayActiveDeviceDrawable = this.getResources().getDrawable(R.drawable.executive_car_48x48_lighter);
+			todayActiveDevicesOverlay = new PoiItemizedOverlay(todayActiveDeviceDrawable, this);
+			mapOverlays.add(todayActiveDevicesOverlay);
 
-		// couche du dessus pour les voitures actives récemment (durée paramétrable)
-		final Drawable recentlyActiveDeviceDrawable = this.getResources().getDrawable(R.drawable.executive_car_48x48);
-		recentlyActiveDevicesOverlay = new PoiItemizedOverlay(recentlyActiveDeviceDrawable, this);
-		mapOverlays.add(recentlyActiveDevicesOverlay);
+			// couche du dessus pour les voitures actives récemment (durée paramétrable)
+			final Drawable recentlyActiveDeviceDrawable = this.getResources().getDrawable(R.drawable.executive_car_48x48);
+			recentlyActiveDevicesOverlay = new PoiItemizedOverlay(recentlyActiveDeviceDrawable, this);
+			mapOverlays.add(recentlyActiveDevicesOverlay);
+		} else {
+			Log.d(TAG, mapOverlays.size() + " overlays déjà présents");
+		}
 
 		// cadrage et zoom
 		mapView.setBuiltInZoomControls(true);
@@ -159,6 +172,18 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		}
 
 		super.onRestoreInstanceState(savedInstanceState);
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		myLocationOverlay.disableMyLocation();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		myLocationOverlay.enableMyLocation();
 	}
 
 	private void ajouterPOIsurLaMap(final List<Overlay> mapOverlays) {
@@ -237,15 +262,13 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 				StringBuffer buffer = new StringBuffer();
 				buffer.append(getResources().getText(R.string.unitid)).append(locatedDevice.getId());
 				buffer.append("\n").append(getResources().getText(R.string.modid)).append(locatedDevice.getModid());
-				// buffer.append("\nStatut : ").append(vehiculeLocalise.getStatut());
 				buffer.append("\n").append(getResources().getText(R.string.validity)).append(locatedDevice.getDateInformations());
 				OverlayItem overlayItem = new OverlayItem(point, getResources().getText(R.string.device) + " " + locatedDevice.getId(),
 						buffer.toString());
 
-				// TODO : à reprendre avec des calendar ?
-				// selon la fraîcheur de l'info
-				Date dateInfoDevice = locatedDevice.getDateInformations();
-				// FIXME : retirer cet ajout de 2h GMT...
+				// créer un nouvel objet car cette méthode peut être appelée plusieurs fois
+				final Date dateInfoDevice = new Date(locatedDevice.getDateInformations().getTime());
+				// FIXME : retirer cet ajout de 2h à l'horaire GMT, c'est bancal...
 				dateInfoDevice.setTime(dateInfoDevice.getTime() + 2 * 60 * 60 * 1000L);
 
 				final long aujourdhuiMs = System.currentTimeMillis();
@@ -258,6 +281,12 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 				Log.d(TAG, locatedDevice.getId() + ": " + dateInfoDevice + " / " + new Date() + " (" + dateRecentEnMinutesAuparavant + ", "
 						+ dateAujourdhuiMinuit + ")");
 
+				// TODO : à reprendre avec des calendar ?
+				final Calendar calInfoDevice = GregorianCalendar.getInstance();
+				calInfoDevice.setTime(locatedDevice.getDateInformations());
+				Log.d(TAG, calInfoDevice.toString() + " / timezone par défaut : " + calInfoDevice.getTimeZone().toString());
+				
+				// selon la fraîcheur de l'info
 				boolean deviceDisplayed = false;
 				if (dateInfoDevice.after(dateRecentEnMinutesAuparavant)) {
 					recentlyActiveDevicesOverlay.addOverlay(overlayItem);
