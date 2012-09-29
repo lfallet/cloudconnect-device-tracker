@@ -3,7 +3,7 @@
 
     <string name="app_name">CloudConnect Device tracker</string>
     <string name="fermer">Close</string>
-    <string name="rafraichir_description">Refresh cars\' location</string>
+    <string name="rafraichir_description">Refresh devices\' location</string>
     <string name="progress_dialog">Retrieving information from g8teway. Please wait…</string>
     <string name="connectionParamsNotSet">Please fill connection parameters first</string>
     <string name="device">Device</string>
@@ -13,6 +13,9 @@
         <item quantity="one">1 device located</item>
         <item quantity="other">%d located devices</item>
     </plurals>
+
+    <string name="today_and_total_located_devices">%1$d today, %2$d in total</string>
+    <string name="today_and_not_displayed_located_devices">%1$d today, %2$d not displayed</string>
 
     <!-- Option Menu -->
     <string name="menuRefreshTitle">Refresh</string>
@@ -25,19 +28,19 @@
     <string name="client">Client</string>
     <string name="url">URL</string>
     <string name="userField_summary">Username used to connect to the g8teway</string>
-    <string name="passwordField_summary">Stored in your device only</string>
+    <string name="passwordField_summary">Only sent to g8teway, privacy respected</string>
     <string name="clientField_summary">Client name used to connect to the g8teway</string>
     <string name="urlField_summary">g8teway\'s API V2 address</string>
     <string name="default_url">http://g8teway.com/api/v2/</string>
 
     <!-- Display parameters -->
     <string name="displayParameters">Display parameters</string>
-    <string name="displayInactiveDevicesTitle">Display of inactive devices</string>
-    <string name="displayInactiveDevices">Inactive devices will be shown on the map</string>
-    <string name="doNotDisplayInactiveDevices">Inactive devices will not be shown on the map</string>
+    <string name="displayInactiveDevicesTitle">Display not active devices</string>
+    <string name="displayInactiveDevices">Devices not active today will be shown on the map</string>
+    <string name="doNotDisplayInactiveDevices">Devices not active today will not be shown on the map</string>
     <string name="definitionOfRecentDevicesInMinutesTitle">Definition of recent devices</string>
     <string name="definitionOfRecentDevicesInMinutesSummary">If a device sent information during the last minutes defined here, it will be considered as recent.</string>
-    <string name="definitionOfRecentDevicesInMinutesMessage">Maximum lenght in minutes to consider a device\'s information as recent</string>
+    <string name="definitionOfRecentDevicesInMinutesMessage">Maximum length in minutes to consider a device\'s information as recent</string>
 
     <!-- device dialog menu -->
     <string name="unitid">unitid: </string>

@@ -63,6 +63,8 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 
 	private Collection<LocatedDevice> locatedDevices;
 
+	private int nbDevicesInactifs;
+
 	// approximativement le centre de Paris
 	private static final GeoPoint initGeoPoint = new GeoPoint(48863850, 2338170);
 	private static final int ZOOM_PAR_DEFAUT = 12;
@@ -251,6 +253,7 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		notActiveDevicesOverlay.clear();
 		todayActiveDevicesOverlay.clear();
 		recentlyActiveDevicesOverlay.clear();
+		nbDevicesInactifs = 0;
 
 		for (LocatedDevice locatedDevice : locatedDevices) {
 			// Log.d(TAG, vehiculeLocalise.getLat() + "," +
@@ -285,7 +288,7 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 				final Calendar calInfoDevice = GregorianCalendar.getInstance();
 				calInfoDevice.setTime(locatedDevice.getDateInformations());
 				Log.d(TAG, calInfoDevice.toString() + " / timezone par défaut : " + calInfoDevice.getTimeZone().toString());
-				
+
 				// selon la fraîcheur de l'info
 				boolean deviceDisplayed = false;
 				if (dateInfoDevice.after(dateRecentEnMinutesAuparavant)) {
@@ -299,6 +302,7 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 						notActiveDevicesOverlay.addOverlay(overlayItem);
 						deviceDisplayed = true;
 					}
+					nbDevicesInactifs++;
 				}
 
 				if (deviceDisplayed)
@@ -477,9 +481,21 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 			progressDialog.dismiss();
 
 			// attention un toast doit être lancé dans le Thread UI, pas un autre ; piste d'amélioration : utiliser un handler
-			final int nbVehiculesLocalises = recentlyActiveDevicesOverlay.size();
-			String texte = getResources().getQuantityString(R.plurals.located_devices, nbVehiculesLocalises, nbVehiculesLocalises);
-			Toast toast = Toast.makeText(getApplicationContext(), texte, Toast.LENGTH_SHORT);
+			final int nbDevicesActifsLocalises = recentlyActiveDevicesOverlay.size();
+			final int nbDevicesActifsAujourdhuiLocalises = nbDevicesActifsLocalises + todayActiveDevicesOverlay.size();
+			final int nbDevicesTotalLocalises = nbDevicesActifsAujourdhuiLocalises + notActiveDevicesOverlay.size();
+			final StringBuilder texteToast = new StringBuilder(40);
+			texteToast.append(getResources().getQuantityString(R.plurals.located_devices, nbDevicesActifsLocalises,
+					nbDevicesActifsLocalises));
+			texteToast.append("\n");
+			if (viewParameters.displayInactiveDevices) {
+				texteToast.append(getResources().getString(R.string.today_and_total_located_devices, nbDevicesActifsAujourdhuiLocalises,
+						nbDevicesTotalLocalises));
+			} else {
+				texteToast.append(getResources().getString(R.string.today_and_not_displayed_located_devices,
+						nbDevicesActifsAujourdhuiLocalises, nbDevicesInactifs));
+			}
+			Toast toast = Toast.makeText(getApplicationContext(), texteToast, Toast.LENGTH_SHORT);
 			toast.show();
 		}
 	}

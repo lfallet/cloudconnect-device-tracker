@@ -3,16 +3,19 @@
 
     <string name="app_name">CloudConnect Device tracker</string>
     <string name="fermer">Fermer</string>
-    <string name="rafraichir_description">Rafraîchir la localisation des voitures</string>
+    <string name="rafraichir_description">Rafraîchir la localisation des devices</string>
     <string name="progress_dialog">Récupération des informations de la g8teway. Merci de patienter…</string>
     <string name="connectionParamsNotSet">Veuillez saisir vos paramètres de connexion</string>
-    <string name="device">Véhicule</string>
+    <string name="device">Device</string>
 
     <plurals name="located_devices">
-        <item quantity="zero">Aucun véhicule localisé</item>
-        <item quantity="one">1 véhicule localisé</item>
-        <item quantity="other">%d véhicules localisés</item>
+        <item quantity="zero">Aucun device localisé</item>
+        <item quantity="one">1 device localisé</item>
+        <item quantity="other">%d devices localisés</item>
     </plurals>
+
+    <string name="today_and_total_located_devices">%1$d aujourd\'hui, %2$d au total</string>
+    <string name="today_and_not_displayed_located_devices">%1$d aujourd\'hui, %2$d non affichés</string>
 
     <!-- Option Menu -->
     <string name="menuRefreshTitle">Rafraîchir</string>
@@ -22,6 +25,8 @@
     <string name="connectionParam">Paramètres de connexion</string>
     <string name="user">Utilisateur</string>
     <string name="password">Mot de passe</string>
+    <string name="client">Client</string>
+    <string name="url">URL</string>
     <string name="userField_summary">Nom d\'utilisateur de la g8teway</string>
     <string name="passwordField_summary">Mémorisé uniquement dans votre appareil</string>
     <string name="clientField_summary">Nom de client sur la g8teway</string>
@@ -29,9 +34,9 @@
 
     <!-- Display parameters -->
     <string name="displayParameters">Paramètres d\'affichage</string>
-    <string name="displayInactiveDevicesTitle">Affichage des devices inactifs</string>
-    <string name="displayInactiveDevices">Les devices inactifs seront représentés sur la carte</string>
-    <string name="doNotDisplayInactiveDevices">Les devices inactifs ne seront pas représentés sur la carte</string>
+    <string name="displayInactiveDevicesTitle">Afficher les devices inactifs</string>
+    <string name="displayInactiveDevices">Les devices inactifs aujourd\'hui seront représentés sur la carte</string>
+    <string name="doNotDisplayInactiveDevices">Les devices inactifs aujourd\'hui ne seront pas représentés sur la carte</string>
     <string name="definitionOfRecentDevicesInMinutesTitle">Définition des devices récents</string>
     <string name="definitionOfRecentDevicesInMinutesSummary">Durée en minutes pendant laquelle une information est considérée comme récente</string>
     <string name="definitionOfRecentDevicesInMinutesMessage">Durée en minutes pendant laquelle une information est considérée comme récente</string>
