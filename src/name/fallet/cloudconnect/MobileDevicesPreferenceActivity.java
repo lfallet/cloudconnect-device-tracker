@@ -34,7 +34,6 @@ public class MobileDevicesPreferenceActivity extends PreferenceActivity implemen
 	/**
 	 * Éventuelle alternative au rechargement des préférences à tout moment
 	 */
-	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		Log.d(TAG, "Appel de onSharedPreferenceChanged(...)");
 

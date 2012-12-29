@@ -19,6 +19,7 @@
 
     <!-- Option Menu -->
     <string name="menuRefreshTitle">Refresh</string>
+    <string name="menuSearchTitle">Search</string>
     <string name="menuSettingsTitle">Settings</string>
 
     <!-- Connection parameters -->
@@ -47,6 +48,12 @@
     <string name="modid">IMEI: </string>
     <string name="validity">Validity: </string>
 
+    <!-- search -->
+    <string name="search_hint">unitid</string>
+    <string name="search_label">label</string>
+    <string name="noDeviceFound">No device found</string>
+    <string name="emptyQuery">Query is empty</string>
+    
     <!-- errors -->
     <string name="networkNotConnected">No connection, please activate one.</string>
 

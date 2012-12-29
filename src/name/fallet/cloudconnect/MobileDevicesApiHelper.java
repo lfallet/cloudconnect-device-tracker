@@ -201,6 +201,8 @@ public class MobileDevicesApiHelper {
 			httpResponse.getEntity().consumeContent();
 			return res;
 		} else {
+			Log.w(TAG, "Réponse HTTP inattendue : " + httpResponse.getStatusLine().getStatusCode() + " "
+					+ httpResponse.getStatusLine().getReasonPhrase());
 			// FIXME : erreur, session peut-être expirée, on se relogge et on réessaie
 			// login(connectionParameters);
 			// attention, réentrant !

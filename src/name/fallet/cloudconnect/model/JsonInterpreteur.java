@@ -24,7 +24,7 @@ public class JsonInterpreteur {
 
 	private static final String TAG = JsonInterpreteur.class.getSimpleName();
 
-	private static final SimpleDateFormat ISO8601_DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	private static final SimpleDateFormat ISO8601_DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
 	/**
 	 * 
@@ -50,8 +50,10 @@ public class JsonInterpreteur {
 
 			// les dates sont au format ISO 8601 (UTC)
 			Date dateInfo = null;
+
 			try {
-				dateInfo = ISO8601_DATEFORMAT.parse(dateStr.substring(0, dateStr.length() - 1));
+				// Log.d(TAG, "Réception de " + dateStr);
+				dateInfo = ISO8601_DATEFORMAT.parse(dateStr.replace("Z", "+0000"));
 			} catch (ParseException e) {
 				Log.w(TAG, "Erreur lors du parsing de la date " + dateStr + " : " + e.getMessage());
 			}

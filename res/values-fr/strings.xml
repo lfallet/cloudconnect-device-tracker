@@ -19,6 +19,7 @@
 
     <!-- Option Menu -->
     <string name="menuRefreshTitle">Rafraîchir</string>
+    <string name="menuSearchTitle">Rechercher</string>
     <string name="menuSettingsTitle">Configuration</string>
 
     <!-- Connection parameters -->

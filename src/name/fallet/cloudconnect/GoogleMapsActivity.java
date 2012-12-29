@@ -1,10 +1,8 @@
 package name.fallet.cloudconnect;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import name.fallet.cloudconnect.model.ApiException;
@@ -13,6 +11,7 @@ import name.fallet.cloudconnect.model.LocatedDevice;
 import name.fallet.cloudconnect.model.ViewParameters;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -39,6 +38,7 @@ import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 import com.google.android.maps.Projection;
+import com.welaika.android.errbit.ErrbitNotifier;
 
 /**
  * 
@@ -61,8 +61,6 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 
 	private final MobileDevicesApiHelper mdApiHelper = new MobileDevicesApiHelper();
 
-	private Collection<LocatedDevice> locatedDevices;
-
 	private int nbDevicesInactifs;
 
 	// approximativement le centre de Paris
@@ -78,6 +76,9 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+
+		// TODO : garder errbit ou non ?
+		ErrbitNotifier.register(this, "errbit.clubchauffeur.com", "a6ae624b1a7a2570a25c01f8b12e5f40", "test", false);
 
 		mapView = (MapView) findViewById(R.id.mapview);
 		final List<Overlay> mapOverlays = mapView.getOverlays();
@@ -97,7 +98,8 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 			todayActiveDevicesOverlay = new PoiItemizedOverlay(todayActiveDeviceDrawable, this);
 			mapOverlays.add(todayActiveDevicesOverlay);
 
-			// couche du dessus pour les voitures actives récemment (durée paramétrable)
+			// couche du dessus pour les voitures actives récemment (durée
+			// paramétrable)
 			final Drawable recentlyActiveDeviceDrawable = this.getResources().getDrawable(R.drawable.executive_car_48x48);
 			recentlyActiveDevicesOverlay = new PoiItemizedOverlay(recentlyActiveDeviceDrawable, this);
 			mapOverlays.add(recentlyActiveDevicesOverlay);
@@ -114,15 +116,67 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		// vérification si le create a été appelé après une reconfig d'écran
 		final Collection<LocatedDevice> data = (Collection<LocatedDevice>) getLastNonConfigurationInstance();
 		if (data == null) {
-			Log.d(TAG, "probablement un démarrage et pas une reconfiguration de l'écran, donc on centre");
+			Log.d(TAG, "Démarrage from scratch, pas de données");
 			mapView.getController().setCenter(initGeoPoint);
 			mapView.getController().setZoom(ZOOM_PAR_DEFAUT);
 		} else {
+			Log.d(TAG, "Redessin des données mémorisées");
 			// on restore
-			locatedDevices = data;
+			Collection<LocatedDevice> locatedDevices = data;
 			// relancer le dessin de ces devices
 			final ViewParameters viewParameters = initializeDisplayParameters();
-			processEveryDevice(locatedDevices, viewParameters);
+			displayDevicesOnMap(locatedDevices, viewParameters);
+		}
+
+		final Intent intent = getIntent();
+		// if the activity is created from search
+		if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
+			Log.i(TAG, "on arrive par la recherche");
+			Log.d(TAG, "données mémorisées : " + data);
+			String query = intent.getStringExtra(SearchManager.QUERY);
+			searchDeviceByUnitId(query);
+		}
+	}
+
+	/**
+	 * Handles search
+	 * 
+	 * @param query
+	 *            unit_id
+	 */
+	private void searchDeviceByUnitId(final String query) {
+		if (query == null || query.isEmpty()) {
+			Toast toast = Toast.makeText(GoogleMapsActivity.this.getApplicationContext(), getResources().getText(R.string.emptyQuery),
+					Toast.LENGTH_SHORT);
+			toast.show();
+			return;
+		}
+
+		Log.d(TAG, "Chaîne recherchée : " + query);
+		Collection<LocatedDevice> locatedDevices = ((CloudConnectApplication) this.getApplication()).getLocatedDevices();
+		if (locatedDevices.isEmpty()) {
+			// toast indiquant qu'il n'y a pas de données
+			Toast toast = Toast.makeText(GoogleMapsActivity.this.getApplicationContext(), getResources().getText(R.string.noDeviceFound),
+					Toast.LENGTH_SHORT);
+			toast.show();
+		} else {
+			// chercher parmi les devices connus, centrer sur celui trouvé
+			LocatedDevice searchedDevice = null;
+			for (LocatedDevice locatedDevice : locatedDevices) {
+				boolean isMatchingQuery = query.equalsIgnoreCase(String.valueOf(locatedDevice.getId()))
+						|| query.equalsIgnoreCase(String.valueOf(locatedDevice.getModid()));
+				if (isMatchingQuery) {
+					searchedDevice = locatedDevice;
+					break;
+				}
+			}
+			if (searchedDevice != null) {
+				mapView.getController().animateTo(new GeoPoint(searchedDevice.getLat(), searchedDevice.getLng()));
+				mapView.getController().zoomIn();
+				mapView.getController().zoomIn();
+				// mapView.getController().setCenter(new GeoPoint(searchedDevice.getLat(), searchedDevice.getLng()));
+				// ZOOM_PAR_DEFAUT + 4
+			}
 		}
 	}
 
@@ -134,7 +188,7 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	 */
 	@Override
 	public Object onRetainNonConfigurationInstance() {
-		final Collection<LocatedDevice> data = locatedDevices;
+		final Collection<LocatedDevice> data = ((CloudConnectApplication) this.getApplication()).getLocatedDevices();
 		return data;
 	}
 
@@ -247,19 +301,27 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	 * @param locatedDevices
 	 * @param viewParameters
 	 */
-	private void processEveryDevice(final Collection<LocatedDevice> locatedDevices, final ViewParameters viewParameters) {
+	private void displayDevicesOnMap(final Collection<LocatedDevice> locatedDevices, final ViewParameters viewParameters) {
 
-		// pour le moment on nettoie tout et on recrée (plus tard, essayer de les déplacer)
+		// pour le moment on nettoie tout et on recrée (plus tard, essayer de
+		// les déplacer)
 		notActiveDevicesOverlay.clear();
 		todayActiveDevicesOverlay.clear();
 		recentlyActiveDevicesOverlay.clear();
 		nbDevicesInactifs = 0;
 
-		for (LocatedDevice locatedDevice : locatedDevices) {
-			// Log.d(TAG, vehiculeLocalise.getLat() + "," +
-			// vehiculeLocalise.getLng() + " / " +
-			// vehiculeLocalise.isLocalise());
+		final long aujourdhuiMs = System.currentTimeMillis();
+		// la notion de récent est un paramètre de visualisation
+		final long recentEnMinutesAuparavantMs = aujourdhuiMs - viewParameters.relativeTimeRecentDevicesInMinutes * 60 * 1000L;
+		final long aujourdhuiMinuitMs = aujourdhuiMs - (aujourdhuiMs % (24 * 60 * 60 * 1000L));
+		final Date dateAujourdhuiMinuit = new Date(aujourdhuiMinuitMs);
+		final Date dateRecentEnMinutesAuparavant = new Date(recentEnMinutesAuparavantMs);
 
+		Log.d(TAG, "now's date : " + new Date());
+		Log.d(TAG, "2 min ago : " + dateRecentEnMinutesAuparavant);
+		Log.d(TAG, "beginning of the day : " + dateAujourdhuiMinuit);
+
+		for (LocatedDevice locatedDevice : locatedDevices) {
 			if (locatedDevice.isLocalise()) {
 				GeoPoint point = new GeoPoint(locatedDevice.getLat(), locatedDevice.getLng());
 				StringBuffer buffer = new StringBuffer();
@@ -270,27 +332,16 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 						buffer.toString());
 
 				// créer un nouvel objet car cette méthode peut être appelée plusieurs fois
-				final Date dateInfoDevice = new Date(locatedDevice.getDateInformations().getTime());
-				// FIXME : retirer cet ajout de 2h à l'horaire GMT, c'est bancal...
-				dateInfoDevice.setTime(dateInfoDevice.getTime() + 2 * 60 * 60 * 1000L);
+				// TODO à reprendre : conserver les timestamp UTC, formater les affichages avec des calendar
+				// Calendar gregCal = GregorianCalendar.getInstance(TimeZone.getDefault());
+				// gregCal.setTimeInMillis(locatedDevice.getDateInformations().getTime());
+				// final Date dateInfoDevice = new Date(locatedDevice.getDateInformations().getTime());
 
-				final long aujourdhuiMs = System.currentTimeMillis();
-				// la notion de récent est un paramètre de visualisation
-				final long recentEnMinutesAuparavantMs = aujourdhuiMs - viewParameters.relativeTimeRecentDevicesInMinutes * 60 * 1000L;
-				final long aujourdhuiMinuitMs = aujourdhuiMs - (aujourdhuiMs % (24 * 60 * 60 * 1000L));
-				final Date dateAujourdhuiMinuit = new Date(aujourdhuiMinuitMs);
-				final Date dateRecentEnMinutesAuparavant = new Date(recentEnMinutesAuparavantMs);
-
-				Log.d(TAG, locatedDevice.getId() + ": " + dateInfoDevice + " / " + new Date() + " (" + dateRecentEnMinutesAuparavant + ", "
-						+ dateAujourdhuiMinuit + ")");
-
-				// TODO : à reprendre avec des calendar ?
-				final Calendar calInfoDevice = GregorianCalendar.getInstance();
-				calInfoDevice.setTime(locatedDevice.getDateInformations());
-				Log.d(TAG, calInfoDevice.toString() + " / timezone par défaut : " + calInfoDevice.getTimeZone().toString());
+				Log.d(TAG, locatedDevice.getId() + ": " + locatedDevice.getDateInformations());
 
 				// selon la fraîcheur de l'info
 				boolean deviceDisplayed = false;
+				final Date dateInfoDevice = locatedDevice.getDateInformations();
 				if (dateInfoDevice.after(dateRecentEnMinutesAuparavant)) {
 					recentlyActiveDevicesOverlay.addOverlay(overlayItem);
 					deviceDisplayed = true;
@@ -350,7 +401,8 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	 */
 	private void creerDialogueException(Exception e) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(GoogleMapsActivity.this);
-		// FIXME : en cas de non connectivité aux réseaux mobiles, l'erreur arrive ici et le builder plante
+		// FIXME : en cas de non connectivité aux réseaux mobiles, l'erreur
+		// arrive ici et le builder plante
 		builder.setTitle(e.getClass().getSimpleName());
 		builder.setMessage(e.getMessage() + "\n" + e.getCause());
 		builder.setNeutralButton(getResources().getText(R.string.fermer), new DialogInterface.OnClickListener() {
@@ -387,11 +439,31 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		case R.id.menuRefresh:
 			refreshOverlay(findViewById(R.id.mapview));
 			return true;
+		case R.id.menuSearch:
+			return onSearchRequested();
 		case R.id.menuSettings:
 			afficherEcranConfiguration();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
+		}
+	}
+
+	/** Inherit android search behavior */
+	@Override
+	public boolean onSearchRequested() {
+		Log.d(TAG, "onSearchRequested() appelé");
+		return super.onSearchRequested();
+	}
+
+	@Override
+	public void onNewIntent(Intent newIntent) {
+		super.onNewIntent(newIntent);
+
+		if (Intent.ACTION_SEARCH.equals(newIntent.getAction())) {
+			Log.i(TAG, "newIntent ACTION_SEARCH");
+			final String query = newIntent.getStringExtra(SearchManager.QUERY);
+			searchDeviceByUnitId(query);
 		}
 	}
 
@@ -403,26 +475,25 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		startActivity(preferencesIntent);
 	}
 
-	@Override
 	public boolean onDoubleTap(MotionEvent e) {
 		Log.d(TAG, "Appel de onDoubleTap() sur l'activité");
 		// FIXME le double tap ne fonctionne pas
 		Toast.makeText(GoogleMapsActivity.this.getApplicationContext(), "onDoubleTap", Toast.LENGTH_SHORT).show();
 		int x = (int) e.getX(), y = (int) e.getY();
 		Projection p = mapView.getProjection();
-		mapView.getController().animateTo(p.fromPixels(x, y)); // zoom in to a point you tapped
+		mapView.getController().animateTo(p.fromPixels(x, y)); // zoom in to a
+																// point you
+																// tapped
 		mapView.getController().zoomIn();
 		return true;
 	}
 
-	@Override
 	public boolean onDoubleTapEvent(MotionEvent e) {
 		// FIXME le double tap ne fonctionne pas
 		Toast.makeText(GoogleMapsActivity.this.getApplicationContext(), "onDoubleTapEvent", Toast.LENGTH_SHORT).show();
 		return true;
 	}
 
-	@Override
 	public boolean onSingleTapConfirmed(MotionEvent e) {
 		return true;
 	}
@@ -444,30 +515,32 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			locatedDevices = new ArrayList<LocatedDevice>();
 			progressDialog = ProgressDialog.show(GoogleMapsActivity.this, "", getResources().getText(R.string.progress_dialog), true);
 		}
 
 		@Override
 		protected Collection<LocatedDevice> doInBackground(ConnectionParameters... params) {
 			try {
-				locatedDevices = mdApiHelper.recupererPositionVehicules(params[0], false);
+				return mdApiHelper.recupererPositionVehicules(params[0], false);
 			} catch (ApiException e) {
 				e.printStackTrace();
-				creerDialogueException(e);
+				// FIXME : pas de création de dialogue dans une async task
+				// creerDialogueException(e);
 			}
-			return locatedDevices;
+			return new ArrayList<LocatedDevice>();
 		}
 
 		/**
 		 * Masquer le dialogue d'avancement. Afficher un toast.
 		 */
 		@Override
-		protected void onPostExecute(Collection<LocatedDevice> result) {
-			super.onPostExecute(result);
+		protected void onPostExecute(Collection<LocatedDevice> locatedDevices) {
+			super.onPostExecute(locatedDevices);
+			((CloudConnectApplication) getApplication()).getLocatedDevices().clear();
+			((CloudConnectApplication) getApplication()).getLocatedDevices().addAll(locatedDevices);
 
 			final ViewParameters viewParameters = initializeDisplayParameters();
-			processEveryDevice(locatedDevices, viewParameters);
+			displayDevicesOnMap(locatedDevices, viewParameters);
 			if (viewParameters.centrerVueSuiteRafraichissement) {
 				// centrer la vue sur les objets
 				final MapView mapView = (MapView) findViewById(R.id.mapview);
@@ -480,7 +553,8 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 
 			progressDialog.dismiss();
 
-			// attention un toast doit être lancé dans le Thread UI, pas un autre ; piste d'amélioration : utiliser un handler
+			// attention un toast doit être lancé dans le Thread UI, pas un
+			// autre ; piste d'amélioration : utiliser un handler
 			final int nbDevicesActifsLocalises = recentlyActiveDevicesOverlay.size();
 			final int nbDevicesActifsAujourdhuiLocalises = nbDevicesActifsLocalises + todayActiveDevicesOverlay.size();
 			final int nbDevicesTotalLocalises = nbDevicesActifsAujourdhuiLocalises + notActiveDevicesOverlay.size();

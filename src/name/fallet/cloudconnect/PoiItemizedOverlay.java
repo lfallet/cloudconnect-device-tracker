@@ -80,7 +80,6 @@ public class PoiItemizedOverlay extends ItemizedOverlay<OverlayItem> implements 
 		// TODO : positionner une icône différente selon la date de validité des données
 		dialog.setIcon(mContext.getResources().getDrawable(R.drawable.executive_car_64x64));
 		dialog.setNeutralButton(mContext.getResources().getText(R.string.fermer), new DialogInterface.OnClickListener() {
-			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
 			}
