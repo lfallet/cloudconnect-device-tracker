@@ -14,5 +14,9 @@
         android:id="@+id/menuSettings"
         android:icon="@drawable/ic_menu_settings"
         android:title="@string/menuSettingsTitle"/>
+    <item
+        android:id="@+id/menuCredits"
+        android:icon="@drawable/ic_menu_info_details"
+        android:title="@string/menuCreditsTitle"/>
     
 </menu>

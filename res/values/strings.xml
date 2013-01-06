@@ -2,8 +2,8 @@
 <resources>
 
     <string name="app_name">CloudConnect Device tracker</string>
-    <string name="fermer">Close</string>
-    <string name="rafraichir_description">Refresh devices\' location</string>
+    <string name="close">Close</string>
+    <string name="refresh_description">Refresh devices\' location</string>
     <string name="progress_dialog">Retrieving information from g8teway. Please wait…</string>
     <string name="connectionParamsNotSet">Please fill connection parameters first</string>
     <string name="device">Device</string>
@@ -21,6 +21,7 @@
     <string name="menuRefreshTitle">Refresh</string>
     <string name="menuSearchTitle">Search</string>
     <string name="menuSettingsTitle">Settings</string>
+    <string name="menuCreditsTitle">Credits</string>
 
     <!-- Connection parameters -->
     <string name="connectionParameters">Connection parameters</string>
@@ -43,6 +44,12 @@
     <string name="definitionOfRecentDevicesInMinutesSummary">If a device sent information during the last minutes defined here, it will be considered as recent.</string>
     <string name="definitionOfRecentDevicesInMinutesMessage">Maximum length in minutes to consider a device\'s information as recent</string>
 
+    <!-- Technical parameters -->
+    <string name="technicalParameters">Technical parameters</string>
+    <string name="sendErrbitReportsTitle">Send error reports</string>
+    <string name="sendErrbitReports">Error reports will be send to developer</string>
+    <string name="doNotsendErrbitReports">Error reports won\'t be send</string>
+
     <!-- device dialog menu -->
     <string name="unitid">unitid: </string>
     <string name="modid">IMEI: </string>
@@ -51,10 +58,15 @@
     <!-- search -->
     <string name="search_hint">unitid</string>
     <string name="search_label">label</string>
+    <string name="noDeviceKnown">No device known, refresh first</string>
     <string name="noDeviceFound">No device found</string>
     <string name="emptyQuery">Query is empty</string>
-    
+
     <!-- errors -->
     <string name="networkNotConnected">No connection, please activate one.</string>
+
+    <!-- Credits -->
+    <string name="creditsTitle">Credits</string>
+    <string name="creditsText">Laurent Fallet\nlaurent.fallet@gmail.com\n2013</string>
 
 </resources>

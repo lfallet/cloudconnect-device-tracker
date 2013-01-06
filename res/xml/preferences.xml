@@ -58,4 +58,16 @@
         <!-- android:title="@string/centerViewOnDevices" /> -->
     </PreferenceCategory>
 
+    <!-- Technical preferences -->
+    <PreferenceCategory
+        android:key="technicalCategory"
+        android:title="@string/technicalParameters" >
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="sendErrbitReports"
+            android:summaryOff="@string/doNotsendErrbitReports"
+            android:summaryOn="@string/sendErrbitReports"
+            android:title="@string/sendErrbitReportsTitle" />
+    </PreferenceCategory>
+
 </PreferenceScreen>

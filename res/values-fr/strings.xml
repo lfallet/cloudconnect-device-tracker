@@ -2,8 +2,8 @@
 <resources>
 
     <string name="app_name">CloudConnect Device tracker</string>
-    <string name="fermer">Fermer</string>
-    <string name="rafraichir_description">Rafraîchir la localisation des devices</string>
+    <string name="close">Fermer</string>
+    <string name="refresh_description">Rafraîchir la localisation des devices</string>
     <string name="progress_dialog">Récupération des informations de la g8teway. Merci de patienter…</string>
     <string name="connectionParamsNotSet">Veuillez saisir vos paramètres de connexion</string>
     <string name="device">Device</string>
@@ -21,6 +21,7 @@
     <string name="menuRefreshTitle">Rafraîchir</string>
     <string name="menuSearchTitle">Rechercher</string>
     <string name="menuSettingsTitle">Configuration</string>
+    <string name="menuCreditsTitle">Crédits</string>
 
     <!-- Connection parameters -->
     <string name="connectionParam">Paramètres de connexion</string>
@@ -42,12 +43,29 @@
     <string name="definitionOfRecentDevicesInMinutesSummary">Durée en minutes pendant laquelle une information est considérée comme récente</string>
     <string name="definitionOfRecentDevicesInMinutesMessage">Durée en minutes pendant laquelle une information est considérée comme récente</string>
 
+    <!-- Technical parameters -->
+    <string name="technicalParameters">Paramètres techniques</string>
+    <string name="sendErrbitReportsTitle">Rapports d\'erreur</string>
+    <string name="sendErrbitReports">Les rapports d\'erreur seront envoyés au développeur</string>
+    <string name="doNotsendErrbitReports">Aucun rapport d\'erreur ne sera émis</string>
+
     <!-- device dialog menu -->
     <string name="unitid">unitid : </string>
     <string name="modid">IMEI : </string>
     <string name="validity">Validité : </string>
 
+    <!-- search -->
+    <string name="search_hint">unitid</string>
+    <string name="search_label">libellé</string>
+    <string name="noDeviceKnown">Aucune donnée, veuillez rafraîchir</string>
+    <string name="noDeviceFound">Aucun device trouvé</string>
+    <string name="emptyQuery">Veuillez saisir un unitid</string>
+
     <!-- errors -->
     <string name="networkNotConnected">Veuillez activer une connexion réseau.</string>
+
+    <!-- Credits -->
+    <string name="creditsTitle">Crédits</string>
+    <string name="creditsText">Laurent Fallet\nlaurent.fallet@gmail.com\n2013</string>
 
 </resources>

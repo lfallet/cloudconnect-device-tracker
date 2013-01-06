@@ -22,6 +22,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.GestureDetector.OnDoubleTapListener;
 import android.view.Menu;
@@ -77,8 +78,10 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		// TODO : garder errbit ou non ?
-		ErrbitNotifier.register(this, "errbit.clubchauffeur.com", "a6ae624b1a7a2570a25c01f8b12e5f40", "test", false);
+		// initialization of errbit bug report
+		if (getErrbitParameters()) {
+			ErrbitNotifier.register(this, "errbit.clubchauffeur.com", "a6ae624b1a7a2570a25c01f8b12e5f40", "test", false);
+		}
 
 		mapView = (MapView) findViewById(R.id.mapview);
 		final List<Overlay> mapOverlays = mapView.getOverlays();
@@ -145,7 +148,7 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	 *            unit_id
 	 */
 	private void searchDeviceByUnitId(final String query) {
-		if (query == null || query.isEmpty()) {
+		if (TextUtils.isEmpty(query)) {
 			Toast toast = Toast.makeText(GoogleMapsActivity.this.getApplicationContext(), getResources().getText(R.string.emptyQuery),
 					Toast.LENGTH_SHORT);
 			toast.show();
@@ -155,27 +158,28 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		Log.d(TAG, "Chaîne recherchée : " + query);
 		Collection<LocatedDevice> locatedDevices = ((CloudConnectApplication) this.getApplication()).getLocatedDevices();
 		if (locatedDevices.isEmpty()) {
-			// toast indiquant qu'il n'y a pas de données
-			Toast toast = Toast.makeText(GoogleMapsActivity.this.getApplicationContext(), getResources().getText(R.string.noDeviceFound),
-					Toast.LENGTH_SHORT);
+			Toast toast = Toast.makeText(GoogleMapsActivity.this.getApplicationContext(), getResources().getText(R.string.noDeviceKnown),
+					Toast.LENGTH_LONG);
 			toast.show();
 		} else {
-			// chercher parmi les devices connus, centrer sur celui trouvé
-			LocatedDevice searchedDevice = null;
+			// chercher parmi les devices connus
+			LocatedDevice deviceMatchingSearch = null;
 			for (LocatedDevice locatedDevice : locatedDevices) {
 				boolean isMatchingQuery = query.equalsIgnoreCase(String.valueOf(locatedDevice.getId()))
 						|| query.equalsIgnoreCase(String.valueOf(locatedDevice.getModid()));
 				if (isMatchingQuery) {
-					searchedDevice = locatedDevice;
+					deviceMatchingSearch = locatedDevice;
 					break;
 				}
 			}
-			if (searchedDevice != null) {
-				mapView.getController().animateTo(new GeoPoint(searchedDevice.getLat(), searchedDevice.getLng()));
+			if (null == deviceMatchingSearch) { // no result
+				Toast toast = Toast.makeText(GoogleMapsActivity.this.getApplicationContext(), getResources()
+						.getText(R.string.noDeviceFound), Toast.LENGTH_SHORT);
+				toast.show();
+			} else { // centrer sur le device trouvé
+				mapView.getController().animateTo(new GeoPoint(deviceMatchingSearch.getLat(), deviceMatchingSearch.getLng()));
 				mapView.getController().zoomIn();
 				mapView.getController().zoomIn();
-				// mapView.getController().setCenter(new GeoPoint(searchedDevice.getLat(), searchedDevice.getLng()));
-				// ZOOM_PAR_DEFAUT + 4
 			}
 		}
 	}
@@ -378,6 +382,12 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	}
 
 	/** */
+	private boolean getErrbitParameters() {
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+		return sharedPrefs.getBoolean("sendErrbitReports", false);
+	}
+
+	/** */
 	private ViewParameters initializeDisplayParameters() {
 		ViewParameters displayParameters = new ViewParameters();
 		// récupérer les préférences
@@ -405,7 +415,7 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		// arrive ici et le builder plante
 		builder.setTitle(e.getClass().getSimpleName());
 		builder.setMessage(e.getMessage() + "\n" + e.getCause());
-		builder.setNeutralButton(getResources().getText(R.string.fermer), new DialogInterface.OnClickListener() {
+		builder.setNeutralButton(getResources().getText(R.string.close), new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
 				// GoogleMapsActivity.this.finish();
 				dialog.dismiss();
@@ -444,6 +454,9 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		case R.id.menuSettings:
 			afficherEcranConfiguration();
 			return true;
+		case R.id.menuCredits:
+			createCreditsDialog();
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -473,6 +486,20 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	private void afficherEcranConfiguration() {
 		Intent preferencesIntent = new Intent(this, MobileDevicesPreferenceActivity.class);
 		startActivity(preferencesIntent);
+	}
+
+	/** */
+	private void createCreditsDialog() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(GoogleMapsActivity.this);
+		builder.setTitle(R.string.creditsTitle);
+		builder.setMessage(R.string.creditsText);
+		builder.setNeutralButton(getResources().getText(R.string.close), new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int id) {
+				dialog.dismiss();
+			}
+		});
+		AlertDialog alert = builder.create();
+		alert.show();
 	}
 
 	public boolean onDoubleTap(MotionEvent e) {
