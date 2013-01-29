@@ -58,7 +58,8 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 	private MyLocationOverlay myLocationOverlay;
 
 	/** Overlay des devices */
-	private PoiItemizedOverlay notActiveDevicesOverlay, todayActiveDevicesOverlay, recentlyActiveDevicesOverlay;
+	private PoiItemizedOverlay notActiveDevicesOverlay, todayActiveDevicesOverlay, highlightedActiveDevicesOverlay,
+			recentlyActiveDevicesOverlay;
 
 	private final MobileDevicesApiHelper mdApiHelper = new MobileDevicesApiHelper();
 
@@ -100,6 +101,11 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 			final Drawable todayActiveDeviceDrawable = this.getResources().getDrawable(R.drawable.executive_car_48x48_lighter);
 			todayActiveDevicesOverlay = new PoiItemizedOverlay(todayActiveDeviceDrawable, this);
 			mapOverlays.add(todayActiveDevicesOverlay);
+
+			// couche pour les voitures en highlight
+			final Drawable highlightedActiveDeviceDrawable = this.getResources().getDrawable(R.drawable.executive_car_48x48_red);
+			highlightedActiveDevicesOverlay = new PoiItemizedOverlay(highlightedActiveDeviceDrawable, this);
+			mapOverlays.add(highlightedActiveDevicesOverlay);
 
 			// couche du dessus pour les voitures actives récemment (durée
 			// paramétrable)
@@ -311,6 +317,7 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 		// les déplacer)
 		notActiveDevicesOverlay.clear();
 		todayActiveDevicesOverlay.clear();
+		highlightedActiveDevicesOverlay.clear();
 		recentlyActiveDevicesOverlay.clear();
 		nbDevicesInactifs = 0;
 
@@ -347,7 +354,11 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 				boolean deviceDisplayed = false;
 				final Date dateInfoDevice = locatedDevice.getDateInformations();
 				if (dateInfoDevice.after(dateRecentEnMinutesAuparavant)) {
-					recentlyActiveDevicesOverlay.addOverlay(overlayItem);
+					if (belongsToHighlightedDevices(locatedDevice, viewParameters)) {
+						highlightedActiveDevicesOverlay.addOverlay(overlayItem);
+					} else {
+						recentlyActiveDevicesOverlay.addOverlay(overlayItem);
+					}
 					deviceDisplayed = true;
 				} else if (dateInfoDevice.after(dateAujourdhuiMinuit)) {
 					todayActiveDevicesOverlay.addOverlay(overlayItem);
@@ -367,6 +378,11 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 
 		// rafraîchir la carte
 		mapView.postInvalidate();
+	}
+
+	/** @return true if unitid set in preferences */
+	private boolean belongsToHighlightedDevices(final LocatedDevice locatedDevice, final ViewParameters viewParameters) {
+		return viewParameters.highlightedUnitIds.contains(locatedDevice.getId());
 	}
 
 	/** */
@@ -403,6 +419,19 @@ public class GoogleMapsActivity extends MapActivity implements OnDoubleTapListen
 			Log.v(TAG, "working fine");
 			displayParameters.relativeTimeRecentDevicesInMinutes = recentValueInt.intValue();
 		}
+
+		// highlight
+		String highlightedDevices = sharedPrefs.getString("highlightedDevices", ViewParameters.DEFAULT_RECENT_VALUE.toString());
+		String[] unitids = highlightedDevices.split(",");
+		for (String unitId : unitids) {
+			if (unitId.matches("[0-9]*")) {
+				displayParameters.highlightedUnitIds.add(Integer.valueOf(unitId));
+			} else {
+				Toast.makeText(GoogleMapsActivity.this.getApplicationContext(), "Incorrect definition of highlightedDevices",
+						Toast.LENGTH_SHORT).show();
+			}
+		}
+
 		return displayParameters;
 	}
 

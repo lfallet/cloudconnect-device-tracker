@@ -1,5 +1,8 @@
 package name.fallet.cloudconnect.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Stocke les paramètres de la vue (coordonnées extrêmes à visualiser)
  * 
@@ -15,6 +18,8 @@ public class ViewParameters {
 	public boolean centrerVueSuiteRafraichissement = false;
 
 	public boolean displayInactiveDevices = true;
+
+	public List<Integer> highlightedUnitIds = new ArrayList<Integer>();
 
 	// information older than that is considered as not recent
 	public Integer relativeTimeRecentDevicesInMinutes;

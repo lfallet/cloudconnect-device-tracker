@@ -43,7 +43,10 @@
     <string name="definitionOfRecentDevicesInMinutesTitle">Definition of recent devices</string>
     <string name="definitionOfRecentDevicesInMinutesSummary">If a device sent information during the last minutes defined here, it will be considered as recent.</string>
     <string name="definitionOfRecentDevicesInMinutesMessage">Maximum length in minutes to consider a device\'s information as recent</string>
-
+    <string name="definitionOfHighlightedDevicesTitle">Highlighted devices</string>
+    <string name="definitionOfHighlightedDevicesSummary">Highlighted devices will appear in red on the map</string>
+    <string name="definitionOfHighlightedDevicesMessage">List unit_id of devices to highlight (comma separated)</string>
+    
     <!-- Technical parameters -->
     <string name="technicalParameters">Technical parameters</string>
     <string name="sendErrbitReportsTitle">Send error reports</string>

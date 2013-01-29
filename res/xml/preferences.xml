@@ -56,6 +56,14 @@
         <!-- <CheckBoxPreference -->
         <!-- android:key="enableCenterViewOnDevices" -->
         <!-- android:title="@string/centerViewOnDevices" /> -->
+        <EditTextPreference
+            android:defaultValue=""
+            android:dialogMessage="@string/definitionOfHighlightedDevicesMessage"
+            android:dialogTitle="@string/definitionOfHighlightedDevicesTitle"
+            android:key="highlightedDevices"
+            android:summary="@string/definitionOfHighlightedDevicesSummary"
+            android:title="@string/definitionOfHighlightedDevicesTitle" />
+            
     </PreferenceCategory>
 
     <!-- Technical preferences -->

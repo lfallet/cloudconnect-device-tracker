@@ -42,7 +42,10 @@
     <string name="definitionOfRecentDevicesInMinutesTitle">Définition des devices récents</string>
     <string name="definitionOfRecentDevicesInMinutesSummary">Durée en minutes pendant laquelle une information est considérée comme récente</string>
     <string name="definitionOfRecentDevicesInMinutesMessage">Durée en minutes pendant laquelle une information est considérée comme récente</string>
-
+    <string name="definitionOfHighlightedDevicesTitle">Devices mis en évidence</string>
+    <string name="definitionOfHighlightedDevicesSummary">Les devices mis en évidence apparaitront en rouge</string>
+    <string name="definitionOfHighlightedDevicesMessage">Lister ici les unit_id des devices à mettre en évidence (séparer par des virgules)</string>
+    
     <!-- Technical parameters -->
     <string name="technicalParameters">Paramètres techniques</string>
     <string name="sendErrbitReportsTitle">Rapports d\'erreur</string>
