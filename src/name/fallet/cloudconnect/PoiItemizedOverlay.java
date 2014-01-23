@@ -18,6 +18,7 @@ import com.google.android.maps.OverlayItem;
  * @author lfallet
  */
 @SuppressWarnings("serial")
+@Deprecated
 public class PoiItemizedOverlay extends ItemizedOverlay<OverlayItem> implements Serializable {
 
 	private static final String TAG = PoiItemizedOverlay.class.getSimpleName();

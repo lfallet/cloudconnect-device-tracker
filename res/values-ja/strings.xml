@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">CloudConnect トラッキング</string>
+    <string name="app_name">G8teway トラッキング</string>
     <string name="fermer">閉じる</string>
-    <string name="rafraichir_description">Rafraîchir la localisation des voitures</string>
-    <string name="progress_dialog">Récupération des informations de la g8teway. 少々お待ちください&#8230;</string>
+    <string name="rafraichir_description">車両の位置を更新する</string>
+    <string name="progress_dialog">Fetching data from g8teway, 少々お待ちください&#8230;</string>
 
-</resources>
+    <!-- Option Menu -->
+    <string name="menuRefreshTitle">更新する</string>
+    <string name="menuSearchTitle">探す</string>
+    <string name="menuSettingsTitle">設定</string>
+    <string name="menuCreditsTitle">クレジット</string>
+</resources>

@@ -3,77 +3,75 @@ package name.fallet.cloudconnect.model;
 import java.util.Date;
 
 /**
- * 
- * @author lfallet
+ * Raw output from the g8teway
  */
 public class LocatedDevice {
 
-	private final int id;
-	private final long modid;
+    /** unitid */
+    private final int id;
 
-	/** mesuré en microdegrés (degrés * 1E6) */
-	private int lat = NOT_INITIALIZED;
-	/** mesuré en microdegrés (degrés * 1E6) */
-	private int lng = NOT_INITIALIZED;
+    /** IMEI, or random text if simulator */
+    private final long modid;
 
-	private String statut;
-	private Date dateInformations;
+    /** expressed in degrees */
+    private double lat = NOT_INITIALIZED;
+    /** expressed in degrees */
+    private double lng = NOT_INITIALIZED;
 
-	private static final int NOT_INITIALIZED = 0;
+    private String status;
+    private Date lastSeenOn;
 
-	public LocatedDevice(int id, long modid, Date dateInformations) {
-		super();
-		this.id = id;
-		this.modid = modid;
-		this.dateInformations = dateInformations;
-	}
+    private static final double NOT_INITIALIZED = 0;
 
-	public int getLat() {
-		return lat;
-	}
+    public LocatedDevice(int id, long modid, Date lastSeenOn) {
+        super();
+        this.id = id;
+        this.modid = modid;
+        this.lastSeenOn = lastSeenOn;
+    }
 
-	/**
-	 * 
-	 * @param lat
-	 *            exprimé en microdegrés (degrés * 1E6)
-	 * @param lng
-	 *            exprimé en microdegrés (degrés * 1E6)
-	 */
-	public void setLatLng(int lat, int lng) {
-		this.lat = lat;
-		this.lng = lng;
-	}
+    public double getLat() {
+        return lat;
+    }
 
-	public int getLng() {
-		return lng;
-	}
+    /**
+     * 
+     * @param lat
+     *            in degrees
+     * @param lng
+     *            degrees
+     */
+    public void setLatLng(double lat, double lng) {
+        this.lat = lat;
+        this.lng = lng;
+    }
 
-	public String getStatut() {
-		return statut;
-	}
+    public double getLng() {
+        return lng;
+    }
 
-	public void setStatut(String statut) {
-		this.statut = statut;
-	}
+    public String getStatus() {
+        return status;
+    }
 
-	public Date getDateInformations() {
-		return dateInformations;
-	}
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-	public void setDateInformations(Date dateInformations) {
-		this.dateInformations = dateInformations;
-	}
+    public Date getLastSeenOn() {
+        return lastSeenOn;
+    }
 
-	public int getId() {
-		return id;
-	}
+    public int getId() {
+        return id;
+    }
 
-	public long getModid() {
-		return modid;
-	}
+    public long getModid() {
+        return modid;
+    }
 
-	public boolean isLocalise() {
-		return lng != NOT_INITIALIZED || lat != NOT_INITIALIZED;
-	}
+    public boolean isLocalized() {
+        return lng != NOT_INITIALIZED || lat != NOT_INITIALIZED;
+    }
 
 }

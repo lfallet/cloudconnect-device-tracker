@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">CloudConnect Device tracker</string>
+    <string name="app_name">G8teway tracker</string>
     <string name="close">Fermer</string>
     <string name="refresh_description">Rafraîchir la localisation des devices</string>
     <string name="progress_dialog">Récupération des informations de la g8teway. Merci de patienter…</string>
@@ -69,6 +69,6 @@
 
     <!-- Credits -->
     <string name="creditsTitle">Crédits</string>
-    <string name="creditsText">Laurent Fallet\nlaurent.fallet@gmail.com\n2013</string>
+    <string name="creditsText">Laurent Fallet\nlaurent.fallet AT gmail.com\n2014</string>
 
 </resources>

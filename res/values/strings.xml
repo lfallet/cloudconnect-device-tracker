@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="google_maps_api_key_v2">AIzaSyBxT9530PBwyoUn8kDjTu3syPSK1yYKthM</string>
 
-    <string name="app_name">CloudConnect Device tracker</string>
+    <string name="app_name">G8teway tracker</string>
     <string name="close">Close</string>
     <string name="refresh_description">Refresh devices\' location</string>
     <string name="progress_dialog">Retrieving information from g8teway. Please wait…</string>
@@ -44,14 +45,14 @@
     <string name="definitionOfRecentDevicesInMinutesSummary">If a device sent information during the last minutes defined here, it will be considered as recent.</string>
     <string name="definitionOfRecentDevicesInMinutesMessage">Maximum length in minutes to consider a device\'s information as recent</string>
     <string name="definitionOfHighlightedDevicesTitle">Highlighted devices</string>
-    <string name="definitionOfHighlightedDevicesSummary">Highlighted devices will appear in red on the map</string>
+    <string name="definitionOfHighlightedDevicesSummary">Enter devices\' unit ids to highlight them in red on the map</string>
     <string name="definitionOfHighlightedDevicesMessage">List unit_id of devices to highlight (comma separated)</string>
     
     <!-- Technical parameters -->
     <string name="technicalParameters">Technical parameters</string>
     <string name="sendErrbitReportsTitle">Send error reports</string>
-    <string name="sendErrbitReports">Error reports will be send to developer</string>
-    <string name="doNotsendErrbitReports">Error reports won\'t be send</string>
+    <string name="sendErrbitReports">Error reports will be sent to developer</string>
+    <string name="doNotsendErrbitReports">Error reports won\'t be sent</string>
 
     <!-- device dialog menu -->
     <string name="unitid">unitid: </string>
@@ -70,6 +71,6 @@
 
     <!-- Credits -->
     <string name="creditsTitle">Credits</string>
-    <string name="creditsText">Laurent Fallet\nlaurent.fallet@gmail.com\n2013</string>
+    <string name="creditsText">Laurent Fallet\nlaurent.fallet AT gmail.com\n2014</string>
 
 </resources>

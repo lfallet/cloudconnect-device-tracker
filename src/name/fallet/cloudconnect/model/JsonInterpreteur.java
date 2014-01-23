@@ -40,8 +40,8 @@ public class JsonInterpreteur {
 			// Log.v(TAG, jsonUnit.toString());
 
 			JSONObject jsonObj = jsonUnit.getJSONObject("unit");
-			int id = jsonObj.getInt(MobileDevicesApiHelper.ID);
-			long modid = jsonObj.getLong(MobileDevicesApiHelper.MODID);
+			final int id = jsonObj.getInt(MobileDevicesApiHelper.ID);
+			final long modid = jsonObj.optLong(MobileDevicesApiHelper.MODID, -1);
 
 			String dateStr = jsonObj.getString(MobileDevicesApiHelper.TIME);
 			if (dateStr == null || "null".equals(dateStr)) {
@@ -59,7 +59,7 @@ public class JsonInterpreteur {
 			}
 			LocatedDevice vehLoc = new LocatedDevice(id, modid, dateInfo);
 
-			int lat = jsonObj.optInt(MobileDevicesApiHelper.LAT) * MobileDevicesApiHelper.COEF_LAT_LNG, lng = jsonObj
+			double lat = jsonObj.optInt(MobileDevicesApiHelper.LAT) * MobileDevicesApiHelper.COEF_LAT_LNG, lng = jsonObj
 					.getInt(MobileDevicesApiHelper.LNG) * MobileDevicesApiHelper.COEF_LAT_LNG;
 			vehLoc.setLatLng(lat, lng);
 			vehiculesLocalises.add(vehLoc);

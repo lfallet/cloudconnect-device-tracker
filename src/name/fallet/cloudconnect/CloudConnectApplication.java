@@ -1,10 +1,7 @@
 package name.fallet.cloudconnect;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import name.fallet.cloudconnect.model.LocatedDevice;
 import android.app.Application;
+import android.content.Context;
 import android.util.Log;
 
 /**
@@ -13,18 +10,24 @@ import android.util.Log;
  * @author laurent
  */
 public class CloudConnectApplication extends Application {
-	
-	private static final String TAG = "CloudConnect";
 
-	private final Collection<LocatedDevice> locatedDevices = new ArrayList<LocatedDevice>();
+    private static final String TAG = "CloudConnect";
 
-	public CloudConnectApplication() {
-		super();
-		Log.d(TAG, "CloudConnectApplication instanciated");
-	}
+    private static Context appContext;
+    
+    public CloudConnectApplication() {
+        super();
+        Log.d(TAG, "CloudConnectApplication instanciated");
+    }
 
-	public Collection<LocatedDevice> getLocatedDevices() {
-		return locatedDevices;
-	}
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        appContext = getApplicationContext();
+    }
+
+    public static Context getAppContext() {
+        return appContext;
+    }
 
 }
