@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="install_google_map">Veuillez installer Google Maps</string>
+    <string name="install_google_map_btn">Installer via Google Play</string>
     <string name="app_name">G8teway tracker</string>
     <string name="close">Fermer</string>
     <string name="refresh_description">Rafraîchir la localisation des devices</string>
@@ -45,7 +47,7 @@
     <string name="definitionOfHighlightedDevicesTitle">Devices mis en évidence</string>
     <string name="definitionOfHighlightedDevicesSummary">Les devices mis en évidence apparaitront en rouge</string>
     <string name="definitionOfHighlightedDevicesMessage">Lister ici les unit_id des devices à mettre en évidence (séparer par des virgules)</string>
-    
+
     <!-- Technical parameters -->
     <string name="technicalParameters">Paramètres techniques</string>
     <string name="sendErrbitReportsTitle">Rapports d\'erreur</string>

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="google_maps_api_key_v2">AIzaSyBxT9530PBwyoUn8kDjTu3syPSK1yYKthM</string>
-
+    <string name="install_google_map">Please install Google Maps</string>
+    <string name="install_google_map_btn">Install from Play store</string>
+    
     <string name="app_name">G8teway tracker</string>
     <string name="close">Close</string>
     <string name="refresh_description">Refresh devices\' location</string>

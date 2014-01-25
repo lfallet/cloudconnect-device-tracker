@@ -1,6 +1,5 @@
 package name.fallet.cloudconnect;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 import name.fallet.cloudconnect.model.ApiException;
@@ -8,14 +7,19 @@ import name.fallet.cloudconnect.model.ConnectionParameters;
 import name.fallet.cloudconnect.model.LocatedDevice;
 import name.fallet.cloudconnect.model.ViewParameters;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -27,6 +31,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -44,6 +50,7 @@ public class MainActivity extends android.support.v4.app.FragmentActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private GoogleMap googleMap;
+    public final int REQUEST_CODE_RECOVER_PLAY_SERVICES = 42; // value doesn't matter
 
     private final MobileDevicesApiHelper mdApiHelper = new MobileDevicesApiHelper();
 
@@ -63,22 +70,32 @@ public class MainActivity extends android.support.v4.app.FragmentActivity {
         registerErrbitNotifier();
 
         googleMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapview)).getMap();
-        // TODO setupMap with check if map is available, error msg if not
-        googleMap.setMyLocationEnabled(true);
-
-        // TODO restore data in case of configChange
-        // final Collection<LocatedDevice> data = (Collection<LocatedDevice>) getLastNonConfigurationInstance();
-        // if (data == null) {
-        // Log.d(TAG, "Démarrage from scratch, pas de données");
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(initLatLng, ZOOM_PAR_DEFAUT));
-        // } else {
-        // Log.d(TAG, "Redessin des données mémorisées");
-        // // on restore
-        // Collection<LocatedDevice> locatedDevices = data;
-        // // relancer le dessin de ces devices
-        // final ViewParameters viewParameters = initializeDisplayParameters();
-        // displayDevicesOnMap(locatedDevices, viewParameters);
-        // }
+        // check if google maps is available, install if not
+        if (isGoogleMapsInstalled()) {
+            if (googleMap != null) {
+                googleMap.setMyLocationEnabled(true);
+                // TODO restore data in case of configChange
+                // final Collection<LocatedDevice> data = (Collection<LocatedDevice>) getLastNonConfigurationInstance();
+                // if (data == null) {
+                // Log.d(TAG, "Démarrage from scratch, pas de données");
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(initLatLng, ZOOM_PAR_DEFAUT));
+                // } else {
+                // Log.d(TAG, "Redessin des données mémorisées");
+                // // on restore
+                // Collection<LocatedDevice> locatedDevices = data;
+                // // relancer le dessin de ces devices
+                // final ViewParameters viewParameters = initializeDisplayParameters();
+                // displayDevicesOnMap(locatedDevices, viewParameters);
+                // }
+            }
+        } else {
+            Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(getResources().getString(R.string.install_google_map));
+            builder.setCancelable(false);
+            builder.setPositiveButton(getResources().getString(R.string.install_google_map_btn), getGoogleMapsListener());
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
 
         final Intent intent = getIntent();
         // if the activity is created from search
@@ -202,7 +219,49 @@ public class MainActivity extends android.support.v4.app.FragmentActivity {
 
     @Override
     protected void onResume() {
+        checkGooglePlayServicesAvailability();
         super.onResume();
+    }
+
+    public boolean checkGooglePlayServicesAvailability() {
+        final int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        Log.d("GooglePlayServicesUtil", "Result of GooglePlayServices check: " + resultCode + " (" + ConnectionResult.SUCCESS
+                + " is success)");
+
+        if (resultCode != ConnectionResult.SUCCESS) {
+            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(resultCode, this, REQUEST_CODE_RECOVER_PLAY_SERVICES);
+            dialog.setCancelable(false);
+            dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                public void onDismiss(DialogInterface dialog) {
+                    finish();
+                }
+            });
+            dialog.show();
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean isGoogleMapsInstalled() {
+        try {
+            getPackageManager().getApplicationInfo("com.google.android.apps.maps", 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+
+    public OnClickListener getGoogleMapsListener() {
+        return new OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.google.android.apps.maps"));
+                startActivity(intent);
+
+                // Finish the activity so they can't circumvent the check
+                finish();
+            }
+        };
     }
 
     /** Check internet availability */
